@@ -1,4 +1,4 @@
-# El Malek Entertainment 👑
+# Nahawand Entertainment 👑
 
 A premium website for Ahmad Al Ali — oriental keyboardist offering entertainment services for weddings and royal events.
 

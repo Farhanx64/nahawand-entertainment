@@ -1,12 +1,143 @@
+import React from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
-import { Music, Calendar, Phone, Instagram, Youtube, Facebook, Mail, Star, Crown, MapPin, ChevronDown, Quote, Menu, X, CheckCircle, Mic } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Music, Calendar, Phone, Instagram, Mail, Star, Crown, MapPin, ChevronDown, Quote, Menu, X, CheckCircle, Mic } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
+const INSTAGRAM_POSTS = [
+  { href: "https://www.instagram.com/layalicafe.ri/reel/Deb6EL9CMZn/", code: "Deb6EL9CMZn", reel: true, caption: "This Friday — it's going down at Layali Cafe! Syrian vibes, halal food, great people." },
+  { href: "https://www.instagram.com/nahawand_.entertainment/p/Dd3sm9HRhNQ/", code: "Dd3sm9HRhNQ", reel: false, caption: "Honestly just can't wait for the crispy shawrma 🔥🕺" },
+  { href: "https://www.instagram.com/layalicafe.ri/reel/DaNrqc5AF7Z/", code: "DaNrqc5AF7Z", reel: true, caption: "Summer starts at Layali — July 3rd! Live music, premium hookah and a brand new menu." },
+  { href: "https://www.instagram.com/nahawand_.entertainment/p/DZ7m9BURTY6/", code: "DZ7m9BURTY6", reel: false, caption: "Come enjoy Mediterranean soul touching vibes at Layali Cafe, July 3rd Friday night 🔥" },
+  { href: "https://www.instagram.com/nahawand_.entertainment/p/DXj9R9DDQfW/", code: "DXj9R9DDQfW", reel: false, caption: "Live at Kaza Maza ✨ Friday, April 24th, 8PM — Middle Eastern vibes, great food, live music all night." },
+];
+
+function PostCard({ p }: { p: (typeof INSTAGRAM_POSTS)[number] }) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <a
+      href={p.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group shrink-0 w-[240px] md:w-[280px] bg-zinc-950 border border-gold/20 hover:border-gold/60 transition-colors overflow-hidden"
+    >
+      <div className="relative aspect-[4/5] bg-black flex items-center justify-center">
+        {broken ? (
+          <img src="/logo.png" alt="" className="w-24 opacity-60" />
+        ) : (
+          <img
+            src={`/posts/${p.code}.jpg`}
+            alt={p.caption}
+            loading="lazy"
+            onError={() => setBroken(true)}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        )}
+        {p.reel && (
+          <span className="absolute top-3 right-3 text-[9px] tracking-[0.25em] text-gold border border-gold/50 bg-black/60 px-2 py-1">REEL</span>
+        )}
+      </div>
+      <div className="p-4">
+        <p className="text-xs text-zinc-300 leading-relaxed line-clamp-3">{p.caption}</p>
+        <span className="mt-3 inline-flex items-center gap-2 text-[10px] tracking-[0.25em] text-gold/70">
+          <Instagram className="w-3 h-3" /> VIEW ON INSTAGRAM
+        </span>
+      </div>
+    </a>
+  );
+}
+
+function AutoScroller({ children, minItems = 6 }: { children: React.ReactNode[]; minItems?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const paused = useRef(false);
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const el = ref.current;
+      if (el && !paused.current) {
+        el.scrollLeft += 0.6;
+        if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft -= el.scrollWidth / 2;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const hold = () => { paused.current = true; };
+  const release = () => { window.setTimeout(() => { paused.current = false; }, 1500); };
+  // Repeat short lists so one half is always wider than the screen, then double it for a seamless loop.
+  const half: React.ReactNode[] = [];
+  while (half.length < minItems && children.length) half.push(...children);
+  return (
+    <div
+      ref={ref}
+      onMouseEnter={hold}
+      onMouseLeave={release}
+      onTouchStart={hold}
+      onTouchEnd={release}
+      className="flex gap-4 overflow-x-auto scrollbar-none -mx-6 px-6"
+    >
+      {[...half, ...half].map((c, i) => (
+        <React.Fragment key={i}>{c}</React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function PostCarousel() {
+  return (
+    <AutoScroller minItems={INSTAGRAM_POSTS.length}>
+      {INSTAGRAM_POSTS.map((p) => (
+        <React.Fragment key={p.code}><PostCard p={p} /></React.Fragment>
+      ))}
+    </AutoScroller>
+  );
+}
+
+type ApprovedReview = { id: number; name: string; event_type: string | null; rating: number; message: string };
+
+function ReviewCarousel() {
+  const [reviews, setReviews] = useState<ApprovedReview[] | null>(null);
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((r) => r.json())
+      .then(setReviews)
+      .catch(() => setReviews([]));
+  }, []);
+
+  if (reviews && reviews.length === 0) {
+    return <p className="text-center text-zinc-500 text-sm">Reviews are coming soon.</p>;
+  }
+  if (!reviews) return null;
+  return (
+    <AutoScroller minItems={6}>
+      {reviews.map((r) => (
+        <div
+          key={r.id}
+          className="group shrink-0 w-[280px] md:w-[340px] p-8 border border-white/5 bg-zinc-950 hover:border-gold/20 transition-all"
+        >
+          <Quote className="w-8 h-8 text-gold/20 mb-4 group-hover:text-gold/40 transition-colors" />
+          <p className="text-zinc-400 text-sm leading-relaxed mb-6 italic line-clamp-6">"{r.message}"</p>
+          <div className="flex gap-1 mb-4">
+            {[...Array(r.rating)].map((_, s) => (
+              <Star key={s} className="w-3.5 h-3.5 text-gold fill-gold" />
+            ))}
+          </div>
+          <div className="border-t border-white/5 pt-4">
+            <p className="text-sm font-semibold">{r.name}</p>
+            {r.event_type && <p className="text-[10px] text-zinc-500 tracking-widest uppercase mt-1">{r.event_type}</p>}
+          </div>
+        </div>
+      ))}
+    </AutoScroller>
+  );
+}
+
 
 const NAV_LINKS = [
   { href: "#about", label: "ABOUT" },
   { href: "#services", label: "SERVICES" },
   { href: "#gallery", label: "GALLERY" },
-  { href: "#testimonials", label: "REVIEWS" },
+  { href: "/reviews", label: "REVIEWS" },
   { href: "#contact", label: "BOOK NOW", cta: true },
 ];
 
@@ -29,36 +160,14 @@ const SERVICES = [
     title: "Private Events",
     arabic: "حفلات",
     icon: <Calendar className="w-10 h-10" />,
-    desc: "Bespoke music curation for VIP corporate events, exclusive private parties, and special occasions.",
-    features: ["Corporate events", "VIP celebrations", "Themed shows"],
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    name: "Ahmad & Layla",
-    event: "Wedding — Dubai, 2025",
-    text: "El Malek turned our wedding into something truly unforgettable. Every guest was on their feet. The energy and artistry were beyond anything we imagined.",
-    stars: 5,
-  },
-  {
-    name: "The Al-Rashid Family",
-    event: "Engagement Party — Abu Dhabi, 2025",
-    text: "We've attended many events but nothing compared to this. The blend of classic maqam with modern arrangements was absolutely stunning.",
-    stars: 5,
-  },
-  {
-    name: "Rania Khalil",
-    event: "Private Celebration — Sharjah, 2024",
-    text: "Professional, punctual, and incredibly talented. Our guests are still talking about the performance months later. Highly recommended.",
-    stars: 5,
+    desc: "Intimate live oriental music for private gatherings, house parties, and special occasions.",
+    features: ["Private gatherings", "House parties", "Birthday celebrations"],
   },
 ];
 
 const WHY_ITEMS = [
-  { label: "PSR-A5000 & KORG setups", desc: "Professional-grade instruments for crystal-clear live sound." },
-  { label: "Full bilingual sets", desc: "Arabic, Turkish, Persian — and Western hits on request." },
-  { label: "Custom repertoire", desc: "Send us your song list. We learn it before your event." },
+  { label: "PSR-A5000 & Korg V3 setups", desc: "Professional-grade instruments for crystal-clear live sound." },
+  { label: "Custom repertoire", desc: "Send us your favorite songs and we'll make a customized setlist to your liking." },
   { label: "Sound system included", desc: "Premium PA system available for venues without in-house audio." },
 ];
 
@@ -74,6 +183,10 @@ function NavBar() {
 
   const scrollTo = (id: string) => {
     setOpen(false);
+    if (id.startsWith("/")) {
+      window.location.href = id;
+      return;
+    }
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -87,11 +200,11 @@ function NavBar() {
         <button onClick={() => scrollTo("#hero")} className="flex items-center gap-3 group">
           <img
             src="/logo.png"
-            alt="El Malek Logo"
+            alt="Nahawand Logo"
             className="h-14 w-auto drop-shadow-[0_0_12px_rgba(212,175,55,0.5)] group-hover:drop-shadow-[0_0_22px_rgba(212,175,55,0.8)] transition-all duration-500"
           />
           <div className="hidden sm:flex flex-col">
-            <span className="font-serif text-xl gold-text tracking-widest leading-none">EL MALEK</span>
+            <span className="font-serif text-xl gold-text tracking-widest leading-none">NAHAWAND</span>
             <span className="text-[8px] text-gold/60 tracking-[0.4em]">ENTERTAINMENT</span>
           </div>
         </button>
@@ -171,9 +284,9 @@ export default function App() {
           className="absolute inset-0 z-0"
         >
           <img
-            src="/artist.jpg"
-            alt="El Malek performing live"
-            className="w-full h-full object-cover object-top"
+            src="/hero.jpg"
+            alt="Nahawand performing live"
+            className="w-full h-full object-cover object-[50%_25%]"
           />
         </motion.div>
 
@@ -190,15 +303,15 @@ export default function App() {
         >
           <motion.img
             src="/logo.png"
-            alt="El Malek Entertainment"
+            alt="Nahawand Entertainment"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
             className="w-52 md:w-72 mx-auto mb-10 drop-shadow-[0_0_40px_rgba(212,175,55,0.5)]"
           />
 
-          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mb-5 tracking-tight leading-tight">
-            Royal <span className="gold-text italic">Oriental</span> Melodies
+          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mb-5 tracking-tight leading-tight text-center">
+            <span className="gold-text italic">Oriental</span> Melodies
           </h1>
 
           <p className="text-zinc-300 text-base md:text-xl font-light mb-2 tracking-[0.25em] uppercase">
@@ -243,35 +356,8 @@ export default function App() {
       <main className="relative z-20 bg-black">
 
         {/* ── ABOUT ─────────────────────────────────────────────────── */}
-        <section id="about" className="py-28 md:py-36 px-6">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
-
-            {/* Photo */}
-            <motion.div
-              initial={{ opacity: 0, x: -60 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, ease: "easeOut" }}
-              className="relative group"
-            >
-              {/* Decorative frame */}
-              <div className="absolute -inset-0 border border-gold/25 translate-x-6 translate-y-6 pointer-events-none transition-transform duration-700 group-hover:translate-x-3 group-hover:translate-y-3" />
-              <div className="relative overflow-hidden border border-white/5">
-                <img
-                  src="/artist.jpg"
-                  alt="El Malek — Live Performance"
-                  className="w-full aspect-[3/4] object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                />
-                {/* Gold overlay shimmer on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-              </div>
-              {/* Floating badge */}
-              <div className="absolute bottom-6 left-6 bg-black/90 backdrop-blur border border-gold/30 px-4 py-3">
-                <p className="text-gold font-serif text-lg leading-none">200+</p>
-                <p className="text-[9px] text-zinc-400 tracking-[0.3em] uppercase mt-1">Events Performed</p>
-              </div>
-            </motion.div>
-
+        <section id="about" className="pt-10 pb-20 md:pt-16 md:pb-28 px-6">
+          <div className="max-w-3xl mx-auto">
             {/* Bio */}
             <motion.div
               initial={{ opacity: 0, x: 60 }}
@@ -279,22 +365,6 @@ export default function App() {
               viewport={{ once: true }}
               transition={{ duration: 0.9, ease: "easeOut" }}
             >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-px w-12 bg-gold" />
-                <span className="text-gold tracking-[0.3em] text-xs uppercase">The Artist</span>
-              </div>
-
-              <h2 className="font-serif text-4xl md:text-5xl mb-6 leading-tight">
-                Master of the <span className="italic gold-text">Arabic</span> Scale
-              </h2>
-
-              <p className="text-zinc-400 text-base leading-relaxed mb-5">
-                El Malek has established himself as the premier keyboard artist and vocalist in the region — blending centuries-old maqam traditions with the power of modern synthesis on the Yamaha PSR-A5000 and KORG flagship workstations.
-              </p>
-              <p className="text-zinc-400 text-base leading-relaxed mb-8">
-                Whether commanding a grand wedding hall or an intimate private gathering, his performances carry the unmistakable energy of a live royal concert — authentic, passionate, and impossible to forget.
-              </p>
-
               <div className="grid grid-cols-3 gap-6 mb-10 py-8 border-y border-white/5">
                 {[
                   { val: "5+", label: "Years Experience" },
@@ -309,7 +379,7 @@ export default function App() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                {["Yamaha PSR-A5000", "KORG PA Series", "Live Vocal", "Maqam Specialist", "Arabic · Turkish · Persian"].map((tag) => (
+                {["Yamaha PSR-A5000", "Korg V3", "Live Vocal", "PA Professional Sound System"].map((tag) => (
                   <span key={tag} className="text-[10px] px-3 py-1.5 border border-gold/20 text-gold/70 tracking-widest uppercase">
                     {tag}
                   </span>
@@ -380,44 +450,7 @@ export default function App() {
               <div className="h-px w-24 gold-gradient mx-auto" />
             </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {/* Main large photo */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="col-span-2 row-span-2 relative group overflow-hidden aspect-square md:aspect-auto"
-              >
-                <img
-                  src="/artist.jpg"
-                  alt="El Malek live performance"
-                  className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <p className="text-sm text-white font-serif italic">Live Performance</p>
-                  <p className="text-xs text-gold/70 tracking-widest uppercase">Yamaha PSR-A5000</p>
-                </div>
-              </motion.div>
-
-              {/* Placeholder tiles */}
-              {[1, 2, 3, 4].map((n) => (
-                <motion.div
-                  key={n}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: n * 0.1 }}
-                  className="relative group overflow-hidden bg-zinc-900 border border-white/5 aspect-square flex items-center justify-center"
-                >
-                  <div className="text-center opacity-40 group-hover:opacity-60 transition-opacity">
-                    <Mic className="w-8 h-8 text-gold mx-auto mb-2" />
-                    <p className="text-[9px] text-gold tracking-[0.3em] uppercase">Coming Soon</p>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.div>
-              ))}
-            </div>
+            <PostCarousel />
 
             <motion.div
               initial={{ opacity: 0 }}
@@ -426,7 +459,7 @@ export default function App() {
               className="text-center mt-10"
             >
               <a
-                href="https://www.instagram.com/"
+                href="https://www.instagram.com/nahawand_.entertainment/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
@@ -438,7 +471,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── WHY EL MALEK ──────────────────────────────────────────── */}
+        {/* ── WHY NAHAWAND ──────────────────────────────────────────── */}
         <section className="py-24 bg-zinc-950 px-6 border-y border-white/5">
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -448,10 +481,10 @@ export default function App() {
             >
               <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">The Difference</span>
               <h2 className="font-serif text-4xl md:text-5xl mb-6 leading-tight">
-                Why Choose <span className="italic gold-text">El Malek</span>
+                Why Choose <span className="italic gold-text">Nahawand</span>
               </h2>
               <p className="text-zinc-400 leading-relaxed text-base">
-                Every event is unique, and El Malek treats it that way. No pre-recorded backing tracks, no generic playlists — only live, soulful performance crafted around your celebration.
+                Every event is unique, and Nahawand treats it that way. No pre-recorded backing tracks, no generic playlists — only live, soulful performance crafted around your celebration.
               </p>
             </motion.div>
 
@@ -495,29 +528,16 @@ export default function App() {
               <div className="h-px w-24 gold-gradient mx-auto" />
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {TESTIMONIALS.map((t, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="p-8 border border-white/5 bg-zinc-950 hover:border-gold/20 transition-all group relative"
-                >
-                  <Quote className="w-8 h-8 text-gold/20 mb-4 group-hover:text-gold/40 transition-colors" />
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(t.stars)].map((_, s) => (
-                      <Star key={s} className="w-3.5 h-3.5 text-gold fill-gold" />
-                    ))}
-                  </div>
-                  <div className="border-t border-white/5 pt-4">
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-[10px] text-zinc-500 tracking-widest uppercase mt-1">{t.event}</p>
-                  </div>
-                </motion.div>
-              ))}
+            <ReviewCarousel />
+
+            <div className="text-center mt-10">
+              <a
+                href="/reviews"
+                className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
+              >
+                <Star className="w-4 h-4" />
+                LEAVE A REVIEW
+              </a>
             </div>
           </div>
         </section>
@@ -543,20 +563,20 @@ export default function App() {
                   {
                     icon: <Phone className="text-gold w-5 h-5" />,
                     label: "Call / WhatsApp",
-                    value: "+971 00 000 0000",
-                    href: "tel:+97100000000",
+                    value: "508 615 6986  ·  617 595 5922",
+                    href: "tel:+15086156986",
                   },
                   {
                     icon: <Mail className="text-gold w-5 h-5" />,
                     label: "Email",
-                    value: "booking@elmalek.com",
-                    href: "mailto:booking@elmalek.com",
+                    value: "ahmadalali2007@icloud.com",
+                    href: "mailto:ahmadalali2007@icloud.com",
                   },
                   {
                     icon: <Instagram className="text-gold w-5 h-5" />,
                     label: "Instagram",
-                    value: "@el_malek_ent",
-                    href: "https://www.instagram.com/",
+                    value: "@nahawand_.entertainment",
+                    href: "https://www.instagram.com/nahawand_.entertainment/",
                   },
                   {
                     icon: <MapPin className="text-gold w-5 h-5" />,
@@ -589,23 +609,6 @@ export default function App() {
                   </motion.div>
                 ))}
 
-                <div className="pt-4 flex gap-4">
-                  {[
-                    { icon: <Instagram className="w-4 h-4" />, href: "https://www.instagram.com/" },
-                    { icon: <Youtube className="w-4 h-4" />, href: "https://www.youtube.com/" },
-                    { icon: <Facebook className="w-4 h-4" />, href: "https://www.facebook.com/" },
-                  ].map((s, i) => (
-                    <a
-                      key={i}
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 border border-white/10 hover:border-gold hover:text-gold flex items-center justify-center text-zinc-500 transition-all"
-                    >
-                      {s.icon}
-                    </a>
-                  ))}
-                </div>
               </div>
 
               {/* Form */}
@@ -674,17 +677,15 @@ export default function App() {
       <footer className="relative py-16 px-6 border-t border-white/5 text-center bg-black">
         <img
           src="/logo.png"
-          alt="El Malek Entertainment"
+          alt="Nahawand Entertainment"
           className="w-24 mx-auto mb-6 opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition-all duration-500"
         />
-        <p className="font-serif text-xl gold-text mb-1">EL MALEK</p>
+        <p className="font-serif text-xl gold-text mb-1">NAHAWAND</p>
         <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">ENTERTAINMENT</p>
 
         <div className="flex justify-center gap-6 mb-8">
           {[
-            { icon: <Instagram className="w-4 h-4" />, href: "https://www.instagram.com/" },
-            { icon: <Youtube className="w-4 h-4" />, href: "https://www.youtube.com/" },
-            { icon: <Facebook className="w-4 h-4" />, href: "https://www.facebook.com/" },
+            { icon: <Instagram className="w-4 h-4" />, href: "https://www.instagram.com/nahawand_.entertainment/" },
           ].map((s, i) => (
             <a
               key={i}
@@ -701,7 +702,7 @@ export default function App() {
         <div className="h-px w-32 gold-gradient mx-auto mb-8 opacity-30" />
 
         <p className="text-[10px] text-zinc-700 tracking-[0.35em] uppercase">
-          © 2026 El Malek Entertainment &nbsp;·&nbsp; Authenticity in Every Note
+          © 2026 Nahawand Entertainment &nbsp;·&nbsp; Authenticity in Every Note
         </p>
       </footer>
     </div>
