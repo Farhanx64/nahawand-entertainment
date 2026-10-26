@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
-import { Music, Calendar, Phone, Instagram, Mail, Star, Crown, MapPin, ChevronDown, Quote, Menu, X, CheckCircle, Mic } from "lucide-react";
+import { Music, Calendar, Phone, Instagram, Mail, Drum, Guitar, Wind, Piano, Speaker, Star, Crown, MapPin, ChevronDown, Quote, Menu, X, CheckCircle, Mic } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 const INSTAGRAM_POSTS = [
@@ -51,11 +51,18 @@ function AutoScroller({ children, minItems = 6 }: { children: React.ReactNode[];
   const paused = useRef(false);
   useEffect(() => {
     let raf = 0;
+    let pos = ref.current?.scrollLeft ?? 0;
     const tick = () => {
       const el = ref.current;
       if (el && !paused.current) {
-        el.scrollLeft += 0.6;
-        if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft -= el.scrollWidth / 2;
+        // iOS Safari truncates fractional scrollLeft, so keep the position in our own float
+        // and re-sync if the user scrolled by hand since the last frame.
+        if (Math.abs(el.scrollLeft - pos) > 2) pos = el.scrollLeft;
+        pos += 0.6;
+        if (pos >= el.scrollWidth / 2) pos -= el.scrollWidth / 2;
+        el.scrollLeft = pos;
+      } else if (el) {
+        pos = el.scrollLeft;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -116,7 +123,7 @@ function ReviewCarousel() {
           className="group shrink-0 w-[280px] md:w-[340px] p-8 border border-white/5 bg-zinc-950 hover:border-gold/20 transition-all"
         >
           <Quote className="w-8 h-8 text-gold/20 mb-4 group-hover:text-gold/40 transition-colors" />
-          <p className="text-zinc-400 text-sm leading-relaxed mb-6 italic line-clamp-6">"{r.message}"</p>
+          <p className="review-scroll text-zinc-400 text-sm leading-relaxed mb-6 italic max-h-40 overflow-y-auto overscroll-contain pr-2">"{r.message}"</p>
           <div className="flex gap-1 mb-4">
             {[...Array(r.rating)].map((_, s) => (
               <Star key={s} className="w-3.5 h-3.5 text-gold fill-gold" />
@@ -139,6 +146,45 @@ const NAV_LINKS = [
   { href: "#gallery", label: "GALLERY" },
   { href: "/reviews", label: "REVIEWS" },
   { href: "#contact", label: "BOOK NOW", cta: true },
+];
+
+const BAND = [
+  {
+    title: "Org",
+    arabic: "أورغ",
+    icon: <Piano className="w-9 h-9" />,
+    members: ["Yamaha PSR-A5000", "Korg V3"],
+  },
+  {
+    title: "Percussion",
+    arabic: "إيقاع",
+    icon: <Drum className="w-9 h-9" />,
+    members: ["Darbuka", "Tabl", "Katem", "Riq"],
+  },
+  {
+    title: "Strings",
+    arabic: "أوتار",
+    icon: <Guitar className="w-9 h-9" />,
+    members: ["Buzuk", "Oud", "Kanun"],
+  },
+  {
+    title: "Wind",
+    arabic: "نفخ",
+    icon: <Wind className="w-9 h-9" />,
+    members: ["Nay"],
+  },
+  {
+    title: "Vocals",
+    arabic: "غناء",
+    icon: <Mic className="w-9 h-9" />,
+    members: ["Singers"],
+  },
+  {
+    title: "Sound",
+    arabic: "صوت",
+    icon: <Speaker className="w-9 h-9" />,
+    members: ["PA Professional Sound System"],
+  },
 ];
 
 const SERVICES = [
@@ -268,16 +314,28 @@ function NavBar() {
 }
 
 export default function App() {
-  const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 0.4], ["0%", "30%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
+  const [ratings, setRatings] = useState<number[]>([]);
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((r) => r.json())
+      .then((rs: { rating: number }[]) => setRatings(rs.map((r) => r.rating)))
+      .catch(() => {});
+  }, []);
+  const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+
+  // Track scroll against the hero itself: page-wide progress shifts whenever the page height changes
+  // (reviews loading, sliders), which makes the hero jump.
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
     <div className="bg-black text-white min-h-screen overflow-x-hidden font-sans selection:bg-gold selection:text-black">
       <NavBar />
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
-      <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section id="hero" ref={heroRef} className="relative h-[100svh] flex items-center justify-center overflow-hidden">
         {/* Artist photo as background */}
         <motion.div
           style={{ y: heroY }}
@@ -362,14 +420,16 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0, x: 60 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               transition={{ duration: 0.9, ease: "easeOut" }}
             >
-              <div className="grid grid-cols-3 gap-6 mb-10 py-8 border-y border-white/5">
+              <div className="grid grid-cols-3 gap-6 mb-4 py-8 border-y border-white/5 text-center">
                 {[
                   { val: "5+", label: "Years Experience" },
                   { val: "200+", label: "Events Performed" },
-                  { val: "100%", label: "5-Star Reviews" },
+                  ...(avgRating
+                    ? [{ val: `${avgRating.toFixed(1)}★`, label: `Average Rating · ${ratings.length} Reviews` }]
+                    : []),
                 ].map((s) => (
                   <div key={s.label}>
                     <h4 className="text-gold font-bold text-3xl mb-1 font-serif">{s.val}</h4>
@@ -377,40 +437,67 @@ export default function App() {
                   </div>
                 ))}
               </div>
-
-              <div className="flex flex-wrap gap-3">
-                {["Yamaha PSR-A5000", "Korg V3", "Live Vocal", "PA Professional Sound System"].map((tag) => (
-                  <span key={tag} className="text-[10px] px-3 py-1.5 border border-gold/20 text-gold/70 tracking-widest uppercase">
-                    {tag}
-                  </span>
-                ))}
-              </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* ── BAND ──────────────────────────────────────────────────── */}
+        <section id="band" className="pb-20 md:pb-28 px-6">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
+              className="text-center mb-14"
+            >
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Build Your Lineup</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">The Band</h2>
+              <div className="h-px w-24 gold-gradient mx-auto mb-6" />
+              <p className="text-zinc-400 text-base max-w-xl mx-auto leading-relaxed">
+                Solo, duo, or a full live band — a lineup that fits your event and space.
+              </p>
+            </motion.div>
+
+            <AutoScroller minItems={BAND.length}>
+              {BAND.map((g) => (
+                <div
+                  key={g.title}
+                  className="shrink-0 w-[220px] p-6 border border-white/5 bg-zinc-950 hover:border-gold/30 transition-colors"
+                >
+                  <div className="text-gold mb-4">{g.icon}</div>
+                  <h3 className="font-serif text-xl mb-1">{g.title}</h3>
+                  <p className="text-gold/60 text-sm mb-4">{g.arabic}</p>
+                  <ul className="space-y-2">
+                    {g.members.map((m) => (
+                      <li key={m} className="flex items-center gap-3 text-sm text-zinc-300">
+                        <CheckCircle className="w-4 h-4 text-gold shrink-0" />
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </AutoScroller>
+
+            <p className="text-center mt-10 text-sm text-zinc-500">
+              Tell us about your event in the booking form and we'll put together the right lineup.
+            </p>
           </div>
         </section>
 
         {/* ── SERVICES ──────────────────────────────────────────────── */}
         <section id="services" className="py-28 md:py-36 bg-zinc-950 px-6 border-y border-white/5">
           <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-20"
-            >
+            <div className="text-center mb-20">
               <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">What We Offer</span>
               <h2 className="font-serif text-4xl md:text-5xl mb-4">Our Services</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
-            </motion.div>
+            </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {SERVICES.map((s, i) => (
-                <motion.div
+                <div
                   key={i}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15, duration: 0.7 }}
                   className="group p-10 border border-white/5 bg-black hover:border-gold/30 transition-all duration-500 relative overflow-hidden"
                 >
                   {/* Corner accent */}
@@ -430,7 +517,7 @@ export default function App() {
                       </li>
                     ))}
                   </ul>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -440,9 +527,9 @@ export default function App() {
         <section id="gallery" className="py-28 md:py-36 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-20"
             >
               <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">In the Spotlight</span>
@@ -455,7 +542,7 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mt-10"
             >
               <a
@@ -477,7 +564,7 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
             >
               <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">The Difference</span>
               <h2 className="font-serif text-4xl md:text-5xl mb-6 leading-tight">
@@ -491,7 +578,7 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="grid gap-5"
             >
               {WHY_ITEMS.map((item, i) => (
@@ -499,7 +586,7 @@ export default function App() {
                   key={i}
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, margin: "0px 0px 250px 0px" }}
                   transition={{ delay: i * 0.1 }}
                   className="flex gap-4 items-start p-5 border border-white/5 hover:border-gold/20 transition-colors bg-black"
                 >
@@ -518,9 +605,9 @@ export default function App() {
         <section id="testimonials" className="py-28 md:py-36 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-20"
             >
               <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Happy Clients</span>
@@ -546,9 +633,9 @@ export default function App() {
         <section id="contact" className="py-28 md:py-36 px-6 bg-zinc-950 border-t border-white/5">
           <div className="max-w-5xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-16"
             >
               <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Reserve Your Date</span>
@@ -589,7 +676,7 @@ export default function App() {
                     key={i}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "0px 0px 250px 0px" }}
                     transition={{ delay: i * 0.1 }}
                     className="flex items-center gap-5"
                   >
@@ -616,7 +703,7 @@ export default function App() {
                 onSubmit={(e) => e.preventDefault()}
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, margin: "0px 0px 250px 0px" }}
                 className="md:col-span-3 space-y-4"
               >
                 <div className="grid grid-cols-2 gap-4">
@@ -703,6 +790,16 @@ export default function App() {
 
         <p className="text-[10px] text-zinc-700 tracking-[0.35em] uppercase">
           © 2026 Nahawand Entertainment &nbsp;·&nbsp; Authenticity in Every Note
+        </p>
+        <p className="text-[10px] text-zinc-600 tracking-[0.2em] uppercase mt-3">
+          <a
+            href="https://www.instagram.com/jbpasto/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gold transition-colors"
+          >
+            Made w Joy by Farhan Ü
+          </a>
         </p>
       </footer>
     </div>
