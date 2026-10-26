@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /reviews/admin
+Disallow: /api/
+
+Sitemap: https://nahawand.org/sitemap.xml

@@ -369,6 +369,7 @@ export default function App() {
           />
 
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mb-5 tracking-tight leading-tight text-center">
+            <span className="sr-only">Nahawand Entertainment — Live Arabic music for weddings in New England. </span>
             <span className="gold-text italic">Oriental</span> Melodies
           </h1>
 
@@ -730,8 +731,8 @@ export default function App() {
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                 </div>
-                <select className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all text-zinc-500">
-                  <option value="" disabled selected>EVENT TYPE</option>
+                <select defaultValue="" className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all text-zinc-500">
+                  <option value="" disabled>EVENT TYPE</option>
                   <option value="wedding">Wedding (عرس)</option>
                   <option value="celebration">Celebration (فرح)</option>
                   <option value="private">Private Event (حفلة)</option>

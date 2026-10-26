@@ -29,3 +29,4 @@ yarn-error.log*
 
 # Wrangler local state
 .wrangler/
+dist-ssr/
