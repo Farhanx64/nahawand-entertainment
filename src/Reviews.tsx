@@ -16,7 +16,7 @@ const EVENT_TYPES = [
   { en: "Wedding", ar: "عرس" },
   { en: "Engagement", ar: "خطوبة" },
   { en: "Birthday", ar: "عيد ميلاد" },
-  { en: "Corporate event", ar: "فعالية شركات" },
+  { en: "Corporate event", ar: "مناسبة للشركات" },
   { en: "Restaurant / cafe", ar: "مطعم / مقهى" },
   { en: "Private party", ar: "حفلة خاصة" },
   { en: "Other", ar: "أخرى" },
@@ -83,7 +83,7 @@ function PublicReviews() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!rating) return setError(t({ en: "Please choose a star rating.", ar: "الرجاء اختيار تقييم بالنجوم." }));
+    if (!rating) return setError(t({ en: "Please choose a star rating.", ar: "اختر عدد النجوم لتقييم تجربتك." }));
     setStatus("sending");
     try {
       const res = await fetch("/api/reviews", {
@@ -104,13 +104,13 @@ function PublicReviews() {
   return (
     <Shell>
       <div className="text-center mb-14">
-        <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Kind Words", ar: "كلمات طيبة" })}</span>
+        <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Kind Words", ar: "من آراء جمهورنا" })}</span>
         <h1 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Reviews", ar: "التقييمات" })}</h1>
         <div className="h-px w-24 gold-gradient mx-auto mb-5" />
         {avg > 0 && (
           <div className="flex items-center justify-center gap-3 text-sm text-zinc-300">
             <Stars value={Math.round(avg)} />
-            <span>{avg.toFixed(1)} · {lang === "ar" ? `${reviews!.length} تقييم` : `${reviews!.length} review${reviews!.length > 1 ? "s" : ""}`}</span>
+            <span>{avg.toFixed(1)} · {lang === "ar" ? `عدد التقييمات: ${reviews!.length}` : `${reviews!.length} review${reviews!.length > 1 ? "s" : ""}`}</span>
           </div>
         )}
       </div>
@@ -119,8 +119,8 @@ function PublicReviews() {
         {status === "done" ? (
           <div className="text-center py-8">
             <CheckCircle className="w-12 h-12 text-gold mx-auto mb-4" />
-            <h2 className="font-serif text-2xl mb-2">{t({ en: "Thank you!", ar: "شكراً لك!" })}</h2>
-            <p className="text-zinc-400 text-sm">{t({ en: "Your review was received and will appear once it has been approved.", ar: "تم استلام تقييمك وسيظهر بعد الموافقة عليه." })}</p>
+            <h2 className="font-serif text-2xl mb-2">{t({ en: "Thank you!", ar: "شكرًا لمشاركتك!" })}</h2>
+            <p className="text-zinc-400 text-sm">{t({ en: "Your review was received and will appear once it has been approved.", ar: "وصلنا تقييمك، وسيُنشر بعد مراجعته والموافقة عليه." })}</p>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-5">
@@ -140,7 +140,7 @@ function PublicReviews() {
             </div>
             <textarea
               className={`${inputCls} min-h-[140px]`}
-              placeholder={t({ en: "Tell us how the performance was…", ar: "أخبرنا كيف كان الأداء…" })}
+              placeholder={t({ en: "Tell us how the performance was…", ar: "كيف كانت تجربتك معنا؟" })}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               minLength={10}
@@ -172,7 +172,7 @@ function PublicReviews() {
         {reviews === null ? (
           <p className="text-center text-zinc-500 text-sm">{t({ en: "Loading…", ar: "جارٍ التحميل…" })}</p>
         ) : reviews.length === 0 ? (
-          <p className="text-center text-zinc-500 text-sm">{t({ en: "No reviews yet — be the first to leave one.", ar: "لا توجد تقييمات بعد — كن أول من يكتب تقييماً." })}</p>
+          <p className="text-center text-zinc-500 text-sm">{t({ en: "No reviews yet — be the first to leave one.", ar: "لم تصلنا تقييمات بعد. شاركنا تجربتك وكن أول من يقيّمنا." })}</p>
         ) : (
           reviews.map((r) => (
             <article key={r.id} className="border border-white/5 bg-zinc-950 p-6">

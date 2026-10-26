@@ -42,7 +42,7 @@ function PostCard({ p }: { p: (typeof INSTAGRAM_POSTS)[number] }) {
       <div className="p-4">
         <p className="text-xs text-zinc-300 leading-relaxed line-clamp-3">{p.caption}</p>
         <span className="mt-3 inline-flex items-center gap-2 text-[10px] tracking-[0.25em] text-gold/70">
-          <Instagram className="w-3 h-3" /> {t({ en: "VIEW ON INSTAGRAM", ar: "عرض على إنستغرام" })}
+          <Instagram className="w-3 h-3" /> {t({ en: "VIEW ON INSTAGRAM", ar: "شاهد على إنستغرام" })}
         </span>
       </div>
     </a>
@@ -117,7 +117,7 @@ function ReviewCarousel() {
   }, []);
 
   if (reviews && reviews.length === 0) {
-    return <p className="text-center text-zinc-500 text-sm">{t({ en: "Reviews are coming soon.", ar: "التقييمات قادمة قريباً." })}</p>;
+    return <p className="text-center text-zinc-500 text-sm">{t({ en: "Reviews are coming soon.", ar: "آراء جمهورنا قريبًا." })}</p>;
   }
   if (!reviews) return null;
   return (
@@ -149,7 +149,7 @@ function ReviewCarousel() {
 const NAV_LINKS: { href: string; label: L; cta?: boolean }[] = [
   { href: "#about", label: { en: "ABOUT", ar: "من نحن" } },
   { href: "#services", label: { en: "SERVICES", ar: "خدماتنا" } },
-  { href: "#gallery", label: { en: "GALLERY", ar: "المعرض" } },
+  { href: "#gallery", label: { en: "GALLERY", ar: "صور وفيديو" } },
   { href: "/reviews", label: { en: "REVIEWS", ar: "التقييمات" } },
   { href: "#contact", label: { en: "BOOK NOW", ar: "احجز الآن" }, cta: true },
 ];
@@ -161,7 +161,7 @@ const BAND: { title: L; icon: React.ReactNode; members: L[] }[] = [
     members: [{ en: "Yamaha PSR-A5000", ar: "Yamaha PSR-A5000" }, { en: "Korg V3", ar: "Korg V3" }],
   },
   {
-    title: { en: "Percussion", ar: "إيقاع" },
+    title: { en: "Percussion", ar: "إيقاعات" },
     icon: <Drum className="w-9 h-9" />,
     members: [
       { en: "Darbuka", ar: "دربكة" },
@@ -171,24 +171,24 @@ const BAND: { title: L; icon: React.ReactNode; members: L[] }[] = [
     ],
   },
   {
-    title: { en: "Strings", ar: "أوتار" },
+    title: { en: "Strings", ar: "آلات وترية" },
     icon: <Guitar className="w-9 h-9" />,
     members: [{ en: "Buzuk", ar: "بزق" }, { en: "Oud", ar: "عود" }, { en: "Kanun", ar: "قانون" }],
   },
   {
-    title: { en: "Wind", ar: "نفخ" },
+    title: { en: "Wind", ar: "آلات نفخ" },
     icon: <Wind className="w-9 h-9" />,
     members: [{ en: "Nay", ar: "ناي" }],
   },
   {
     title: { en: "Vocals", ar: "غناء" },
     icon: <Mic className="w-9 h-9" />,
-    members: [{ en: "Singers", ar: "مغنّون" }],
+    members: [{ en: "Singers", ar: "مطربون" }],
   },
   {
-    title: { en: "Sound", ar: "صوت" },
+    title: { en: "Sound", ar: "تجهيزات صوتية" },
     icon: <Speaker className="w-9 h-9" />,
-    members: [{ en: "PA Professional Sound System", ar: "نظام صوت احترافي" }],
+    members: [{ en: "PA Professional Sound System", ar: "نظام صوتي احترافي" }],
   },
 ];
 
@@ -198,36 +198,36 @@ const SERVICES: { title: L; icon: React.ReactNode; desc: L; features: L[] }[] = 
     icon: <Crown className="w-10 h-10" />,
     desc: {
       en: "From the entrance zaffa to the last dance — a full evening of live oriental music tailored to your wedding vision.",
-      ar: "من الزفة عند الدخول حتى الرقصة الأخيرة — أمسية كاملة من الموسيقى الشرقية الحية على قياس حلم زفافك.",
+      ar: "من زفّة العروسين حتى آخر رقصة، نرافق فرحتكم بموسيقى شرقية حيّة وأغانٍ تختارونها لليلتكم.",
     },
     features: [
-      { en: "Live zaffa performance", ar: "زفة حية" },
-      { en: "Customised song list", ar: "قائمة أغاني مخصصة" },
-      { en: "Full-night sets", ar: "عزف طوال الليل" },
+      { en: "Live zaffa performance", ar: "زفّة بموسيقى حيّة" },
+      { en: "Customised song list", ar: "أغانٍ من اختياركم" },
+      { en: "Full-night sets", ar: "موسيقى طوال السهرة" },
     ],
   },
   {
-    title: { en: "Celebrations", ar: "أفراح" },
+    title: { en: "Celebrations", ar: "احتفالات" },
     icon: <Music className="w-10 h-10" />,
     desc: {
       en: "Engagement parties, graduation ceremonies, and family gatherings elevated with authentic oriental atmosphere.",
-      ar: "حفلات الخطوبة والتخرج والتجمعات العائلية بأجواء شرقية أصيلة.",
+      ar: "نشارككم فرحة الخطوبة والتخرّج واللّمات العائلية بموسيقى شرقية وأجواء تليق بالمناسبة.",
     },
     features: [
       { en: "Engagement parties", ar: "حفلات خطوبة" },
       { en: "Graduation events", ar: "حفلات تخرج" },
-      { en: "Family gatherings", ar: "تجمعات عائلية" },
+      { en: "Family gatherings", ar: "لقاءات عائلية" },
     ],
   },
   {
-    title: { en: "Private Events", ar: "حفلات" },
+    title: { en: "Private Events", ar: "حفلات خاصة" },
     icon: <Calendar className="w-10 h-10" />,
     desc: {
       en: "Intimate live oriental music for private gatherings, house parties, and special occasions.",
-      ar: "موسيقى شرقية حية وحميمة للتجمعات الخاصة والحفلات المنزلية والمناسبات الخاصة.",
+      ar: "من جلسة الأصدقاء إلى حفلة البيت، نختار لكم موسيقى شرقية حيّة تناسب أجواءكم.",
     },
     features: [
-      { en: "Private gatherings", ar: "تجمعات خاصة" },
+      { en: "Private gatherings", ar: "جلسات خاصة" },
       { en: "House parties", ar: "حفلات منزلية" },
       { en: "Birthday celebrations", ar: "أعياد ميلاد" },
     ],
@@ -236,21 +236,21 @@ const SERVICES: { title: L; icon: React.ReactNode; desc: L; features: L[] }[] = 
 
 const WHY_ITEMS: { label: L; desc: L }[] = [
   {
-    label: { en: "PSR-A5000 & Korg V3 setups", ar: "إعدادات PSR-A5000 و Korg V3" },
-    desc: { en: "Professional-grade instruments for crystal-clear live sound.", ar: "آلات احترافية لصوت حي نقي وواضح." },
+    label: { en: "PSR-A5000 & Korg V3 setups", ar: "أورغ PSR-A5000 وKorg V3" },
+    desc: { en: "Professional-grade instruments for crystal-clear live sound.", ar: "آلات احترافية تمنحكم صوتًا نقيًا وواضحًا في الحفل." },
   },
   {
-    label: { en: "Custom repertoire", ar: "قائمة أغاني حسب الطلب" },
+    label: { en: "Custom repertoire", ar: "أغانٍ على ذوقكم" },
     desc: {
       en: "Send us your favorite songs and we'll make a customized setlist to your liking.",
-      ar: "أرسل لنا أغانيك المفضلة وسنجهّز لك قائمة عزف مخصصة حسب ذوقك.",
+      ar: "شاركونا أغانيكم المفضّلة، لنحضّر برنامجًا موسيقيًا يناسب ذوقكم.",
     },
   },
   {
-    label: { en: "Sound system included", ar: "نظام الصوت مشمول" },
+    label: { en: "Sound system included", ar: "التجهيزات الصوتية مشمولة" },
     desc: {
       en: "Premium PA system available for venues without in-house audio.",
-      ar: "نظام صوت احترافي متوفر للقاعات التي لا تملك نظام صوت خاص.",
+      ar: "نوفّر نظامًا صوتيًا احترافيًا للقاعات غير المجهّزة بالصوت.",
     },
   },
 ];
@@ -290,7 +290,7 @@ function NavBar() {
           />
           <div className="hidden sm:flex flex-col">
             <span className="font-serif text-xl gold-text tracking-widest leading-none">{t({ en: "NAHAWAND", ar: "نهاوند" })}</span>
-            <span className="text-[8px] text-gold/60 tracking-[0.4em]">{t({ en: "ENTERTAINMENT", ar: "للترفيه" })}</span>
+            <span className="text-[8px] text-gold/60 tracking-[0.4em]">{t({ en: "ENTERTAINMENT", ar: "للموسيقى والحفلات" })}</span>
           </div>
         </button>
 
@@ -413,7 +413,7 @@ export default function App() {
           />
 
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mb-5 tracking-tight leading-tight text-center">
-            <span className="sr-only">{t({ en: "Nahawand Entertainment — Live Arabic music for weddings in New England. ", ar: "نهاوند للترفيه — موسيقى عربية حية للأعراس في نيو إنجلاند. " })}</span>
+            <span className="sr-only">{t({ en: "Nahawand Entertainment — Live Arabic music for weddings in New England. ", ar: "نهاوند للموسيقى والحفلات — موسيقى عربية حيّة للأعراس في نيو إنجلاند. " })}</span>
             {lang === "ar" ? (
               <>ألحان <span className="gold-text">شرقية</span></>
             ) : (
@@ -422,7 +422,7 @@ export default function App() {
           </h1>
 
           <p className="text-zinc-300 text-base md:text-xl font-light mb-2 tracking-[0.25em] uppercase">
-            {t({ en: "Weddings · Celebrations · Private Events", ar: "أعراس · أفراح · حفلات خاصة" })}
+            {t({ en: "Weddings · Celebrations · Private Events", ar: "أعراس · احتفالات · حفلات خاصة" })}
           </p>
           {lang === "en" ? (
             <p className="text-gold/70 font-arabic text-xl mb-10 tracking-wide">
@@ -459,7 +459,7 @@ export default function App() {
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
           className="absolute bottom-10 z-20 text-gold/50 hover:text-gold transition-colors flex flex-col items-center gap-2"
         >
-          <span className="text-[9px] tracking-[0.4em] uppercase">{t({ en: "Scroll", ar: "مرّر" })}</span>
+          <span className="text-[9px] tracking-[0.4em] uppercase">{t({ en: "Scroll", ar: "تابع للأسفل" })}</span>
           <ChevronDown className="w-5 h-5" />
         </motion.button>
       </section>
@@ -478,12 +478,12 @@ export default function App() {
             >
               <div className="grid grid-cols-3 gap-6 mb-4 py-8 border-y border-white/5 text-center">
                 {[
-                  { val: "5+", label: t({ en: "Years Experience", ar: "سنوات الخبرة" }) },
-                  { val: "200+", label: t({ en: "Events Performed", ar: "حفلة أُحييت" }) },
+                  { val: "5+", label: t({ en: "Years Experience", ar: "سنوات من الخبرة" }) },
+                  { val: "200+", label: t({ en: "Events Performed", ar: "حفل أحييناه" }) },
                   ...(avgRating
                     ? [{
                         val: `${avgRating.toFixed(1)}★`,
-                        label: t({ en: `Average Rating · ${ratings.length} Reviews`, ar: `متوسط التقييم · ${ratings.length} تقييم` }),
+                        label: t({ en: `Average Rating · ${ratings.length} Reviews`, ar: `متوسط التقييم · عدد الآراء: ${ratings.length}` }),
                       }]
                     : []),
                 ].map((s) => (
@@ -506,11 +506,11 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-14"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Build Your Lineup", ar: "كوّن فرقتك" })}</span>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Build Your Lineup", ar: "اختاروا فرقتكم" })}</span>
               <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "The Band", ar: "الفرقة" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto mb-6" />
               <p className="text-zinc-400 text-base max-w-xl mx-auto leading-relaxed">
-                {t({ en: "Solo, duo, or a full live band — a lineup that fits your event and space.", ar: "عازف منفرد، ثنائي، أو فرقة حية كاملة — تشكيلة تناسب مناسبتك ومكانك." })}
+                {t({ en: "Solo, duo, or a full live band — a lineup that fits your event and space.", ar: "من عازف واحد أو ثنائي إلى فرقة كاملة، نختار معكم ما يناسب مناسبتكم ومساحة المكان." })}
               </p>
             </motion.div>
 
@@ -537,7 +537,7 @@ export default function App() {
             </AutoScroller>
 
             <p className="text-center mt-10 text-sm text-zinc-500">
-              {t({ en: "Tell us about your event in the booking form and we'll put together the right lineup.", ar: "أخبرنا عن مناسبتك في نموذج الحجز وسنجهّز لك التشكيلة المناسبة." })}
+              {t({ en: "Tell us about your event in the booking form and we'll put together the right lineup.", ar: "شاركونا تفاصيل مناسبتكم في نموذج الحجز، لنختار معكم الفرقة المناسبة." })}
             </p>
           </div>
         </section>
@@ -546,7 +546,7 @@ export default function App() {
         <section id="services" className="py-28 md:py-36 bg-zinc-950 px-6 border-y border-white/5">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-20">
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "What We Offer", ar: "ماذا نقدّم" })}</span>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "What We Offer", ar: "ما نقدّمه لكم" })}</span>
               <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Our Services", ar: "خدماتنا" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
             </div>
@@ -589,8 +589,8 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-20"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "In the Spotlight", ar: "تحت الأضواء" })}</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Gallery", ar: "المعرض" })}</h2>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "In the Spotlight", ar: "من حفلاتنا" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Gallery", ar: "صور وفيديو" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
             </motion.div>
 
@@ -609,7 +609,7 @@ export default function App() {
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
               >
                 <Instagram className="w-4 h-4" />
-                {t({ en: "FOLLOW FOR MORE ON INSTAGRAM", ar: "تابعنا على إنستغرام للمزيد" })}
+                {t({ en: "FOLLOW FOR MORE ON INSTAGRAM", ar: "شاهدوا المزيد على إنستغرام" })}
               </a>
             </motion.div>
           </div>
@@ -634,7 +634,7 @@ export default function App() {
               <p className="text-zinc-400 leading-relaxed text-base">
                 {t({
                   en: "Every event is unique, and Nahawand treats it that way. No pre-recorded backing tracks, no generic playlists — only live, soulful performance crafted around your celebration.",
-                  ar: "كل مناسبة فريدة، ونهاوند تتعامل معها على هذا الأساس. لا مقاطع مسجلة ولا قوائم تشغيل جاهزة — أداء حي نابض بالروح، مصمم حول احتفالك.",
+                  ar: "لفرحتكم طابعها الخاص، ولموسيقاها أيضًا. مع نهاوند، نحيي مناسبتكم بعزف وغناء حيّ، بعيدًا عن التسجيلات وقوائم الأغاني الجاهزة، لنصنع معكم أجواء تشبهكم.",
                 })}
               </p>
             </motion.div>
@@ -674,8 +674,8 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-20"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Happy Clients", ar: "عملاء سعداء" })}</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "What They Say", ar: "ماذا يقولون" })}</h2>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Happy Clients", ar: "فرحتكم تسعدنا" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "What They Say", ar: "آراء أصحاب الحفلات" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
             </motion.div>
 
@@ -687,7 +687,7 @@ export default function App() {
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
               >
                 <Star className="w-4 h-4" />
-                {t({ en: "LEAVE A REVIEW", ar: "اترك تقييماً" })}
+                {t({ en: "LEAVE A REVIEW", ar: "شاركنا رأيك" })}
               </a>
             </div>
           </div>
@@ -702,9 +702,9 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-16"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Reserve Your Date", ar: "احجز موعدك" })}</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4 italic">{t({ en: "Request a Booking", ar: "اطلب حجزاً" })}</h2>
-              <p className="text-zinc-500 text-sm tracking-widest uppercase">{t({ en: "Dates fill up fast — reach out early", ar: "المواعيد تُحجز بسرعة — تواصل معنا مبكراً" })}</p>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Reserve Your Date", ar: "احجزوا تاريخ مناسبتكم" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4 italic">{t({ en: "Request a Booking", ar: "للحجز والاستفسار" })}</h2>
+              <p className="text-zinc-500 text-sm tracking-widest uppercase">{t({ en: "Dates fill up fast — reach out early", ar: "تواصلوا معنا مبكرًا لضمان توفّر موعدكم" })}</p>
             </motion.div>
 
             <div className="grid md:grid-cols-5 gap-12">
@@ -732,7 +732,7 @@ export default function App() {
                   {
                     icon: <MapPin className="text-gold w-5 h-5" />,
                     label: t({ en: "Location", ar: "الموقع" }),
-                    value: t({ en: "New England — available for travel", ar: "نيو إنجلاند — متاحون للسفر" }),
+                    value: t({ en: "New England — available for travel", ar: "نيو إنجلاند — نلبّي حجوزات خارج المنطقة" }),
                     href: null,
                   },
                 ].map((c, i) => (
@@ -797,13 +797,13 @@ export default function App() {
                 <select defaultValue="" className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all text-zinc-500">
                   <option value="" disabled>{t({ en: "EVENT TYPE", ar: "نوع المناسبة" })}</option>
                   <option value="wedding">{t({ en: "Wedding (عرس)", ar: "عرس" })}</option>
-                  <option value="celebration">{t({ en: "Celebration (فرح)", ar: "فرح" })}</option>
+                  <option value="celebration">{t({ en: "Celebration (فرح)", ar: "احتفال" })}</option>
                   <option value="private">{t({ en: "Private Event (حفلة)", ar: "حفلة خاصة" })}</option>
-                  <option value="corporate">{t({ en: "Corporate Event", ar: "فعالية شركات" })}</option>
+                  <option value="corporate">{t({ en: "Corporate Event", ar: "مناسبة للشركات" })}</option>
                   <option value="other">{t({ en: "Other", ar: "أخرى" })}</option>
                 </select>
                 <textarea
-                  placeholder={t({ en: "TELL US ABOUT YOUR EVENT — VENUE, GUEST COUNT, SPECIAL REQUESTS...", ar: "أخبرنا عن مناسبتك — المكان، عدد الضيوف، طلبات خاصة..." })}
+                  placeholder={t({ en: "TELL US ABOUT YOUR EVENT — VENUE, GUEST COUNT, SPECIAL REQUESTS...", ar: "شاركونا تفاصيل المناسبة: المكان، عدد الضيوف، وأي طلبات خاصة…" })}
                   rows={4}
                   className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 resize-none"
                 />
@@ -813,10 +813,10 @@ export default function App() {
                   type="submit"
                   className="w-full py-5 bg-gold text-black font-bold tracking-[0.3em] text-sm uppercase hover:bg-gold-light transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_40px_rgba(212,175,55,0.4)]"
                 >
-                  {t({ en: "SEND INQUIRY", ar: "إرسال الطلب" })}
+                  {t({ en: "SEND INQUIRY", ar: "إرسال الاستفسار" })}
                 </motion.button>
                 <p className="text-[10px] text-zinc-600 text-center tracking-widest">
-                  {t({ en: "WE TYPICALLY RESPOND WITHIN 24 HOURS", ar: "نرد عادةً خلال 24 ساعة" })}
+                  {t({ en: "WE TYPICALLY RESPOND WITHIN 24 HOURS", ar: "نردّ عادةً خلال 24 ساعة" })}
                 </p>
               </motion.form>
             </div>
@@ -832,7 +832,7 @@ export default function App() {
           className="w-24 mx-auto mb-6 opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition-all duration-500"
         />
         <p className="font-serif text-xl gold-text mb-1">{t({ en: "NAHAWAND", ar: "نهاوند" })}</p>
-        <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">{t({ en: "ENTERTAINMENT", ar: "للترفيه" })}</p>
+        <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">{t({ en: "ENTERTAINMENT", ar: "للموسيقى والحفلات" })}</p>
 
         <div className="flex justify-center gap-6 mb-8">
           {[
@@ -853,7 +853,7 @@ export default function App() {
         <div className="h-px w-32 gold-gradient mx-auto mb-8 opacity-30" />
 
         <p className="text-[10px] text-zinc-700 tracking-[0.35em] uppercase">
-          {t({ en: "© 2026 Nahawand Entertainment", ar: "© 2026 نهاوند للترفيه" })} &nbsp;·&nbsp; {t({ en: "Authenticity in Every Note", ar: "الأصالة في كل نغمة" })}
+          {t({ en: "© 2026 Nahawand Entertainment", ar: "© 2026 نهاوند للموسيقى والحفلات" })} &nbsp;·&nbsp; {t({ en: "Authenticity in Every Note", ar: "أصالة في كل نغمة" })}
         </p>
         <p className="text-[10px] text-zinc-600 tracking-[0.2em] uppercase mt-3">
           <a

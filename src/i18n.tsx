@@ -10,7 +10,7 @@ const Context = createContext<Ctx>({ lang: "en", dir: "ltr", setLang: () => {}, 
 
 const TITLES: L = {
   en: "Nahawand Entertainment | Live Arabic & Oriental Music for Weddings in New England",
-  ar: "نهاوند للترفيه | موسيقى عربية وشرقية حية للأعراس في نيو إنجلاند",
+  ar: "نهاوند للموسيقى والحفلات | موسيقى عربية وشرقية حيّة للأعراس في نيو إنجلاند",
 };
 
 export function LangProvider({ children }: { children: ReactNode }) {
