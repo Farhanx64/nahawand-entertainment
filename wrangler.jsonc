@@ -10,8 +10,7 @@
     "run_worker_first": ["/api/*"]
   },
   "routes": [
-    { "pattern": "nahawand.org", "custom_domain": true },
-    { "pattern": "www.nahawand.org", "custom_domain": true }
+    { "pattern": "nahawand.org", "custom_domain": true }
   ],
   "d1_databases": [
     {

@@ -1,0 +1,8 @@
+{
+  "name": "nahawand-www-redirect",
+  "account_id": "30900c28fc08f6b6e03f29833097d9f7",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "routes": [{ "pattern": "www.nahawand.org", "custom_domain": true }]
+}

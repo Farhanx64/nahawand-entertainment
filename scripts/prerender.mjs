@@ -13,7 +13,7 @@ writeFileSync('dist/index.html', template.replace(marker, `<div id="root">${rend
 const reviews = template
   .replace(/<title>.*?<\/title>/, '<title>Reviews | Nahawand Entertainment</title>')
   .replace(/<meta name="description"[^>]*>/, '<meta name="description" content="Read and share reviews of Nahawand Entertainment, live Arabic and oriental music for weddings and celebrations in New England." />')
-  .replace(/<link rel="canonical"[^>]*>/, '<link rel="canonical" href="https://nahawand.org/reviews" />')
+  .replace(/<link rel="canonical"[^>]*>/, '<link rel="canonical" href="https://nahawand.org/reviews/" />')
   .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, '');
 mkdirSync('dist/reviews', { recursive: true });
 writeFileSync('dist/reviews/index.html', reviews);
