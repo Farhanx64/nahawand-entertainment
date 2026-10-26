@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Star, ArrowLeft, CheckCircle, Trash2 } from "lucide-react";
+import { useLang, LangToggle } from "./i18n.tsx";
 
 type Review = {
   id: number;
@@ -11,7 +12,15 @@ type Review = {
   created_at: string;
 };
 
-const EVENT_TYPES = ["Wedding", "Engagement", "Birthday", "Corporate event", "Restaurant / cafe", "Private party", "Other"];
+const EVENT_TYPES = [
+  { en: "Wedding", ar: "عرس" },
+  { en: "Engagement", ar: "خطوبة" },
+  { en: "Birthday", ar: "عيد ميلاد" },
+  { en: "Corporate event", ar: "فعالية شركات" },
+  { en: "Restaurant / cafe", ar: "مطعم / مقهى" },
+  { en: "Private party", ar: "حفلة خاصة" },
+  { en: "Other", ar: "أخرى" },
+];
 
 function Stars({ value, onChange }: { value: number; onChange?: (n: number) => void }) {
   return (
@@ -36,13 +45,17 @@ const inputCls =
   "w-full bg-zinc-950 border border-white/10 focus:border-gold outline-none px-4 py-3 text-sm text-white placeholder:text-zinc-500 transition-colors";
 
 function Shell({ children }: { children: ReactNode }) {
+  const { t } = useLang();
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
         <a href="/" className="flex items-center gap-3 text-xs tracking-[0.2em] text-gold/80 hover:text-gold">
-          <ArrowLeft className="w-4 h-4" /> BACK TO SITE
+          <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {t({ en: "BACK TO SITE", ar: "العودة إلى الموقع" })}
         </a>
-        <img src="/logo.png" alt="Nahawand Entertainment" className="h-12" />
+        <div className="flex items-center gap-4">
+          <LangToggle />
+          <img src="/logo.png" alt="Nahawand Entertainment" className="h-12" />
+        </div>
       </header>
       <main className="max-w-3xl mx-auto px-6 py-16">{children}</main>
     </div>
@@ -50,6 +63,7 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function PublicReviews() {
+  const { t, lang } = useLang();
   const [reviews, setReviews] = useState<Review[] | null>(null);
   const [name, setName] = useState("");
   const [eventType, setEventType] = useState("");
@@ -69,7 +83,7 @@ function PublicReviews() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!rating) return setError("Please choose a star rating.");
+    if (!rating) return setError(t({ en: "Please choose a star rating.", ar: "الرجاء اختيار تقييم بالنجوم." }));
     setStatus("sending");
     try {
       const res = await fetch("/api/reviews", {
@@ -90,13 +104,13 @@ function PublicReviews() {
   return (
     <Shell>
       <div className="text-center mb-14">
-        <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Kind Words</span>
-        <h1 className="font-serif text-4xl md:text-5xl mb-4">Reviews</h1>
+        <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Kind Words", ar: "كلمات طيبة" })}</span>
+        <h1 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Reviews", ar: "التقييمات" })}</h1>
         <div className="h-px w-24 gold-gradient mx-auto mb-5" />
         {avg > 0 && (
           <div className="flex items-center justify-center gap-3 text-sm text-zinc-300">
             <Stars value={Math.round(avg)} />
-            <span>{avg.toFixed(1)} · {reviews!.length} review{reviews!.length > 1 ? "s" : ""}</span>
+            <span>{avg.toFixed(1)} · {lang === "ar" ? `${reviews!.length} تقييم` : `${reviews!.length} review${reviews!.length > 1 ? "s" : ""}`}</span>
           </div>
         )}
       </div>
@@ -105,28 +119,28 @@ function PublicReviews() {
         {status === "done" ? (
           <div className="text-center py-8">
             <CheckCircle className="w-12 h-12 text-gold mx-auto mb-4" />
-            <h2 className="font-serif text-2xl mb-2">Thank you!</h2>
-            <p className="text-zinc-400 text-sm">Your review was received and will appear once it has been approved.</p>
+            <h2 className="font-serif text-2xl mb-2">{t({ en: "Thank you!", ar: "شكراً لك!" })}</h2>
+            <p className="text-zinc-400 text-sm">{t({ en: "Your review was received and will appear once it has been approved.", ar: "تم استلام تقييمك وسيظهر بعد الموافقة عليه." })}</p>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-5">
-            <h2 className="font-serif text-2xl">Share your experience</h2>
+            <h2 className="font-serif text-2xl">{t({ en: "Share your experience", ar: "شاركنا تجربتك" })}</h2>
             <div>
-              <p className="text-xs tracking-[0.2em] text-zinc-400 mb-2">YOUR RATING</p>
+              <p className="text-xs tracking-[0.2em] text-zinc-400 mb-2">{t({ en: "YOUR RATING", ar: "تقييمك" })}</p>
               <Stars value={rating} onChange={setRating} />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <input className={inputCls} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
+              <input className={inputCls} placeholder={t({ en: "Your name", ar: "اسمك" })} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
               <select className={inputCls} value={eventType} onChange={(e) => setEventType(e.target.value)}>
-                <option value="">Event type (optional)</option>
-                {EVENT_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                <option value="">{t({ en: "Event type (optional)", ar: "نوع المناسبة (اختياري)" })}</option>
+                {EVENT_TYPES.map((e) => (
+                  <option key={e.en} value={e.en}>{t(e)}</option>
                 ))}
               </select>
             </div>
             <textarea
               className={`${inputCls} min-h-[140px]`}
-              placeholder="Tell us how the performance was…"
+              placeholder={t({ en: "Tell us how the performance was…", ar: "أخبرنا كيف كان الأداء…" })}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               minLength={10}
@@ -148,7 +162,7 @@ function PublicReviews() {
               disabled={status === "sending"}
               className="w-full py-4 bg-gold text-black font-semibold tracking-[0.2em] text-sm hover:bg-gold-light transition-colors disabled:opacity-60"
             >
-              {status === "sending" ? "SENDING…" : "SUBMIT REVIEW"}
+              {status === "sending" ? t({ en: "SENDING…", ar: "جارٍ الإرسال…" }) : t({ en: "SUBMIT REVIEW", ar: "إرسال التقييم" })}
             </button>
           </form>
         )}
@@ -156,9 +170,9 @@ function PublicReviews() {
 
       <section className="space-y-5">
         {reviews === null ? (
-          <p className="text-center text-zinc-500 text-sm">Loading…</p>
+          <p className="text-center text-zinc-500 text-sm">{t({ en: "Loading…", ar: "جارٍ التحميل…" })}</p>
         ) : reviews.length === 0 ? (
-          <p className="text-center text-zinc-500 text-sm">No reviews yet — be the first to leave one.</p>
+          <p className="text-center text-zinc-500 text-sm">{t({ en: "No reviews yet — be the first to leave one.", ar: "لا توجد تقييمات بعد — كن أول من يكتب تقييماً." })}</p>
         ) : (
           reviews.map((r) => (
             <article key={r.id} className="border border-white/5 bg-zinc-950 p-6">

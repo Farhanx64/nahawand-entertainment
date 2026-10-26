@@ -2,6 +2,7 @@ import React from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { Music, Calendar, Phone, Instagram, Mail, Drum, Guitar, Wind, Piano, Speaker, Star, Crown, MapPin, ChevronDown, Quote, Menu, X, CheckCircle, Mic } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useLang, LangToggle, type L } from "./i18n.tsx";
 
 const INSTAGRAM_POSTS = [
   { href: "https://www.instagram.com/layalicafe.ri/reel/Deb6EL9CMZn/", code: "Deb6EL9CMZn", reel: true, caption: "This Friday — it's going down at Layali Cafe! Syrian vibes, halal food, great people." },
@@ -13,8 +14,10 @@ const INSTAGRAM_POSTS = [
 
 function PostCard({ p }: { p: (typeof INSTAGRAM_POSTS)[number] }) {
   const [broken, setBroken] = useState(false);
+  const { t, dir } = useLang();
   return (
     <a
+      dir={dir}
       href={p.href}
       target="_blank"
       rel="noopener noreferrer"
@@ -33,13 +36,13 @@ function PostCard({ p }: { p: (typeof INSTAGRAM_POSTS)[number] }) {
           />
         )}
         {p.reel && (
-          <span className="absolute top-3 right-3 text-[9px] tracking-[0.25em] text-gold border border-gold/50 bg-black/60 px-2 py-1">REEL</span>
+          <span className="absolute top-3 right-3 text-[9px] tracking-[0.25em] text-gold border border-gold/50 bg-black/60 px-2 py-1">{t({ en: "REEL", ar: "ريلز" })}</span>
         )}
       </div>
       <div className="p-4">
         <p className="text-xs text-zinc-300 leading-relaxed line-clamp-3">{p.caption}</p>
         <span className="mt-3 inline-flex items-center gap-2 text-[10px] tracking-[0.25em] text-gold/70">
-          <Instagram className="w-3 h-3" /> VIEW ON INSTAGRAM
+          <Instagram className="w-3 h-3" /> {t({ en: "VIEW ON INSTAGRAM", ar: "عرض على إنستغرام" })}
         </span>
       </div>
     </a>
@@ -81,6 +84,7 @@ function AutoScroller({ children, minItems = 6 }: { children: React.ReactNode[];
       onMouseLeave={release}
       onTouchStart={hold}
       onTouchEnd={release}
+      dir="ltr"
       className="flex gap-4 overflow-x-auto scrollbar-none -mx-6 px-6"
     >
       {[...half, ...half].map((c, i) => (
@@ -103,6 +107,7 @@ function PostCarousel() {
 type ApprovedReview = { id: number; name: string; event_type: string | null; rating: number; message: string };
 
 function ReviewCarousel() {
+  const { t, dir } = useLang();
   const [reviews, setReviews] = useState<ApprovedReview[] | null>(null);
   useEffect(() => {
     fetch("/api/reviews")
@@ -112,7 +117,7 @@ function ReviewCarousel() {
   }, []);
 
   if (reviews && reviews.length === 0) {
-    return <p className="text-center text-zinc-500 text-sm">Reviews are coming soon.</p>;
+    return <p className="text-center text-zinc-500 text-sm">{t({ en: "Reviews are coming soon.", ar: "التقييمات قادمة قريباً." })}</p>;
   }
   if (!reviews) return null;
   return (
@@ -120,6 +125,7 @@ function ReviewCarousel() {
       {reviews.map((r) => (
         <div
           key={r.id}
+          dir={dir}
           className="group shrink-0 w-[280px] md:w-[340px] p-8 border border-white/5 bg-zinc-950 hover:border-gold/20 transition-all"
         >
           <Quote className="w-8 h-8 text-gold/20 mb-4 group-hover:text-gold/40 transition-colors" />
@@ -140,84 +146,117 @@ function ReviewCarousel() {
 }
 
 
-const NAV_LINKS = [
-  { href: "#about", label: "ABOUT" },
-  { href: "#services", label: "SERVICES" },
-  { href: "#gallery", label: "GALLERY" },
-  { href: "/reviews", label: "REVIEWS" },
-  { href: "#contact", label: "BOOK NOW", cta: true },
+const NAV_LINKS: { href: string; label: L; cta?: boolean }[] = [
+  { href: "#about", label: { en: "ABOUT", ar: "من نحن" } },
+  { href: "#services", label: { en: "SERVICES", ar: "خدماتنا" } },
+  { href: "#gallery", label: { en: "GALLERY", ar: "المعرض" } },
+  { href: "/reviews", label: { en: "REVIEWS", ar: "التقييمات" } },
+  { href: "#contact", label: { en: "BOOK NOW", ar: "احجز الآن" }, cta: true },
 ];
 
-const BAND = [
+const BAND: { title: L; icon: React.ReactNode; members: L[] }[] = [
   {
-    title: "Org",
-    arabic: "أورغ",
+    title: { en: "Org", ar: "أورغ" },
     icon: <Piano className="w-9 h-9" />,
-    members: ["Yamaha PSR-A5000", "Korg V3"],
+    members: [{ en: "Yamaha PSR-A5000", ar: "Yamaha PSR-A5000" }, { en: "Korg V3", ar: "Korg V3" }],
   },
   {
-    title: "Percussion",
-    arabic: "إيقاع",
+    title: { en: "Percussion", ar: "إيقاع" },
     icon: <Drum className="w-9 h-9" />,
-    members: ["Darbuka", "Tabl", "Katem", "Riq"],
+    members: [
+      { en: "Darbuka", ar: "دربكة" },
+      { en: "Tabl", ar: "طبل" },
+      { en: "Katem", ar: "كاتم" },
+      { en: "Riq", ar: "رق" },
+    ],
   },
   {
-    title: "Strings",
-    arabic: "أوتار",
+    title: { en: "Strings", ar: "أوتار" },
     icon: <Guitar className="w-9 h-9" />,
-    members: ["Buzuk", "Oud", "Kanun"],
+    members: [{ en: "Buzuk", ar: "بزق" }, { en: "Oud", ar: "عود" }, { en: "Kanun", ar: "قانون" }],
   },
   {
-    title: "Wind",
-    arabic: "نفخ",
+    title: { en: "Wind", ar: "نفخ" },
     icon: <Wind className="w-9 h-9" />,
-    members: ["Nay"],
+    members: [{ en: "Nay", ar: "ناي" }],
   },
   {
-    title: "Vocals",
-    arabic: "غناء",
+    title: { en: "Vocals", ar: "غناء" },
     icon: <Mic className="w-9 h-9" />,
-    members: ["Singers"],
+    members: [{ en: "Singers", ar: "مغنّون" }],
   },
   {
-    title: "Sound",
-    arabic: "صوت",
+    title: { en: "Sound", ar: "صوت" },
     icon: <Speaker className="w-9 h-9" />,
-    members: ["PA Professional Sound System"],
+    members: [{ en: "PA Professional Sound System", ar: "نظام صوت احترافي" }],
   },
 ];
 
-const SERVICES = [
+const SERVICES: { title: L; icon: React.ReactNode; desc: L; features: L[] }[] = [
   {
-    title: "Weddings",
-    arabic: "أعراس",
+    title: { en: "Weddings", ar: "أعراس" },
     icon: <Crown className="w-10 h-10" />,
-    desc: "From the entrance zaffa to the last dance — a full evening of live oriental music tailored to your wedding vision.",
-    features: ["Live zaffa performance", "Customised song list", "Full-night sets"],
+    desc: {
+      en: "From the entrance zaffa to the last dance — a full evening of live oriental music tailored to your wedding vision.",
+      ar: "من الزفة عند الدخول حتى الرقصة الأخيرة — أمسية كاملة من الموسيقى الشرقية الحية على قياس حلم زفافك.",
+    },
+    features: [
+      { en: "Live zaffa performance", ar: "زفة حية" },
+      { en: "Customised song list", ar: "قائمة أغاني مخصصة" },
+      { en: "Full-night sets", ar: "عزف طوال الليل" },
+    ],
   },
   {
-    title: "Celebrations",
-    arabic: "أفراح",
+    title: { en: "Celebrations", ar: "أفراح" },
     icon: <Music className="w-10 h-10" />,
-    desc: "Engagement parties, graduation ceremonies, and family gatherings elevated with authentic oriental atmosphere.",
-    features: ["Engagement parties", "Graduation events", "Family gatherings"],
+    desc: {
+      en: "Engagement parties, graduation ceremonies, and family gatherings elevated with authentic oriental atmosphere.",
+      ar: "حفلات الخطوبة والتخرج والتجمعات العائلية بأجواء شرقية أصيلة.",
+    },
+    features: [
+      { en: "Engagement parties", ar: "حفلات خطوبة" },
+      { en: "Graduation events", ar: "حفلات تخرج" },
+      { en: "Family gatherings", ar: "تجمعات عائلية" },
+    ],
   },
   {
-    title: "Private Events",
-    arabic: "حفلات",
+    title: { en: "Private Events", ar: "حفلات" },
     icon: <Calendar className="w-10 h-10" />,
-    desc: "Intimate live oriental music for private gatherings, house parties, and special occasions.",
-    features: ["Private gatherings", "House parties", "Birthday celebrations"],
+    desc: {
+      en: "Intimate live oriental music for private gatherings, house parties, and special occasions.",
+      ar: "موسيقى شرقية حية وحميمة للتجمعات الخاصة والحفلات المنزلية والمناسبات الخاصة.",
+    },
+    features: [
+      { en: "Private gatherings", ar: "تجمعات خاصة" },
+      { en: "House parties", ar: "حفلات منزلية" },
+      { en: "Birthday celebrations", ar: "أعياد ميلاد" },
+    ],
   },
 ];
 
-const WHY_ITEMS = [
-  { label: "PSR-A5000 & Korg V3 setups", desc: "Professional-grade instruments for crystal-clear live sound." },
-  { label: "Custom repertoire", desc: "Send us your favorite songs and we'll make a customized setlist to your liking." },
-  { label: "Sound system included", desc: "Premium PA system available for venues without in-house audio." },
+const WHY_ITEMS: { label: L; desc: L }[] = [
+  {
+    label: { en: "PSR-A5000 & Korg V3 setups", ar: "إعدادات PSR-A5000 و Korg V3" },
+    desc: { en: "Professional-grade instruments for crystal-clear live sound.", ar: "آلات احترافية لصوت حي نقي وواضح." },
+  },
+  {
+    label: { en: "Custom repertoire", ar: "قائمة أغاني حسب الطلب" },
+    desc: {
+      en: "Send us your favorite songs and we'll make a customized setlist to your liking.",
+      ar: "أرسل لنا أغانيك المفضلة وسنجهّز لك قائمة عزف مخصصة حسب ذوقك.",
+    },
+  },
+  {
+    label: { en: "Sound system included", ar: "نظام الصوت مشمول" },
+    desc: {
+      en: "Premium PA system available for venues without in-house audio.",
+      ar: "نظام صوت احترافي متوفر للقاعات التي لا تملك نظام صوت خاص.",
+    },
+  },
 ];
 
 function NavBar() {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -250,8 +289,8 @@ function NavBar() {
             className="h-14 w-auto drop-shadow-[0_0_12px_rgba(212,175,55,0.5)] group-hover:drop-shadow-[0_0_22px_rgba(212,175,55,0.8)] transition-all duration-500"
           />
           <div className="hidden sm:flex flex-col">
-            <span className="font-serif text-xl gold-text tracking-widest leading-none">NAHAWAND</span>
-            <span className="text-[8px] text-gold/60 tracking-[0.4em]">ENTERTAINMENT</span>
+            <span className="font-serif text-xl gold-text tracking-widest leading-none">{t({ en: "NAHAWAND", ar: "نهاوند" })}</span>
+            <span className="text-[8px] text-gold/60 tracking-[0.4em]">{t({ en: "ENTERTAINMENT", ar: "للترفيه" })}</span>
           </div>
         </button>
 
@@ -264,7 +303,7 @@ function NavBar() {
                 onClick={() => scrollTo(l.href)}
                 className="px-6 py-2.5 border border-gold text-gold hover:bg-gold hover:text-black transition-all duration-300 font-semibold"
               >
-                {l.label}
+                {t(l.label)}
               </button>
             ) : (
               <button
@@ -272,16 +311,20 @@ function NavBar() {
                 onClick={() => scrollTo(l.href)}
                 className="text-zinc-300 hover:text-gold transition-colors font-light"
               >
-                {l.label}
+                {t(l.label)}
               </button>
             )
           )}
+          <LangToggle />
         </div>
 
-        {/* Mobile hamburger */}
-        <button onClick={() => setOpen(!open)} className="md:hidden text-gold p-2">
-          {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* Mobile: language toggle + hamburger */}
+        <div className="md:hidden flex items-center gap-2">
+          <LangToggle />
+          <button onClick={() => setOpen(!open)} className="text-gold p-2" aria-label="Menu">
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -298,11 +341,11 @@ function NavBar() {
                 <button
                   key={l.href}
                   onClick={() => scrollTo(l.href)}
-                  className={`text-left text-sm tracking-[0.2em] py-2 transition-colors ${
+                  className={`text-start text-sm tracking-[0.2em] py-2 transition-colors ${
                     l.cta ? "text-gold border-b border-gold/30" : "text-zinc-300 hover:text-gold"
                   }`}
                 >
-                  {l.label}
+                  {t(l.label)}
                 </button>
               ))}
             </div>
@@ -314,6 +357,7 @@ function NavBar() {
 }
 
 export default function App() {
+  const { t, lang, dir } = useLang();
   const [ratings, setRatings] = useState<number[]>([]);
   useEffect(() => {
     fetch("/api/reviews")
@@ -369,16 +413,24 @@ export default function App() {
           />
 
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mb-5 tracking-tight leading-tight text-center">
-            <span className="sr-only">Nahawand Entertainment — Live Arabic music for weddings in New England. </span>
-            <span className="gold-text italic">Oriental</span> Melodies
+            <span className="sr-only">{t({ en: "Nahawand Entertainment — Live Arabic music for weddings in New England. ", ar: "نهاوند للترفيه — موسيقى عربية حية للأعراس في نيو إنجلاند. " })}</span>
+            {lang === "ar" ? (
+              <>ألحان <span className="gold-text">شرقية</span></>
+            ) : (
+              <><span className="gold-text italic">Oriental</span> Melodies</>
+            )}
           </h1>
 
           <p className="text-zinc-300 text-base md:text-xl font-light mb-2 tracking-[0.25em] uppercase">
-            Weddings · Celebrations · Private Events
+            {t({ en: "Weddings · Celebrations · Private Events", ar: "أعراس · أفراح · حفلات خاصة" })}
           </p>
-          <p className="text-gold/70 font-arabic text-xl mb-10 tracking-wide">
-            أفراح · أعراس · حفلات
-          </p>
+          {lang === "en" ? (
+            <p className="text-gold/70 font-arabic text-xl mb-10 tracking-wide">
+              أفراح · أعراس · حفلات
+            </p>
+          ) : (
+            <div className="mb-10" />
+          )}
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <motion.button
@@ -387,7 +439,7 @@ export default function App() {
               onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
               className="px-10 py-4 bg-gold text-black font-bold tracking-[0.25em] text-sm shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:shadow-[0_0_50px_rgba(212,175,55,0.6)] transition-shadow"
             >
-              BOOK PERFORMANCE
+              {t({ en: "BOOK PERFORMANCE", ar: "احجز حفلتك" })}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.04 }}
@@ -395,7 +447,7 @@ export default function App() {
               onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
               className="px-10 py-4 border border-white/30 text-white hover:border-gold hover:text-gold transition-colors text-sm tracking-[0.25em]"
             >
-              DISCOVER MORE
+              {t({ en: "DISCOVER MORE", ar: "اكتشف المزيد" })}
             </motion.button>
           </div>
         </motion.div>
@@ -407,7 +459,7 @@ export default function App() {
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
           className="absolute bottom-10 z-20 text-gold/50 hover:text-gold transition-colors flex flex-col items-center gap-2"
         >
-          <span className="text-[9px] tracking-[0.4em] uppercase">Scroll</span>
+          <span className="text-[9px] tracking-[0.4em] uppercase">{t({ en: "Scroll", ar: "مرّر" })}</span>
           <ChevronDown className="w-5 h-5" />
         </motion.button>
       </section>
@@ -426,10 +478,13 @@ export default function App() {
             >
               <div className="grid grid-cols-3 gap-6 mb-4 py-8 border-y border-white/5 text-center">
                 {[
-                  { val: "5+", label: "Years Experience" },
-                  { val: "200+", label: "Events Performed" },
+                  { val: "5+", label: t({ en: "Years Experience", ar: "سنوات الخبرة" }) },
+                  { val: "200+", label: t({ en: "Events Performed", ar: "حفلة أُحييت" }) },
                   ...(avgRating
-                    ? [{ val: `${avgRating.toFixed(1)}★`, label: `Average Rating · ${ratings.length} Reviews` }]
+                    ? [{
+                        val: `${avgRating.toFixed(1)}★`,
+                        label: t({ en: `Average Rating · ${ratings.length} Reviews`, ar: `متوسط التقييم · ${ratings.length} تقييم` }),
+                      }]
                     : []),
                 ].map((s) => (
                   <div key={s.label}>
@@ -451,28 +506,29 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-14"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Build Your Lineup</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">The Band</h2>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Build Your Lineup", ar: "كوّن فرقتك" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "The Band", ar: "الفرقة" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto mb-6" />
               <p className="text-zinc-400 text-base max-w-xl mx-auto leading-relaxed">
-                Solo, duo, or a full live band — a lineup that fits your event and space.
+                {t({ en: "Solo, duo, or a full live band — a lineup that fits your event and space.", ar: "عازف منفرد، ثنائي، أو فرقة حية كاملة — تشكيلة تناسب مناسبتك ومكانك." })}
               </p>
             </motion.div>
 
             <AutoScroller minItems={BAND.length}>
               {BAND.map((g) => (
                 <div
-                  key={g.title}
+                  key={g.title.en}
+                  dir={dir}
                   className="shrink-0 w-[220px] p-6 border border-white/5 bg-zinc-950 hover:border-gold/30 transition-colors"
                 >
                   <div className="text-gold mb-4">{g.icon}</div>
-                  <h3 className="font-serif text-xl mb-1">{g.title}</h3>
-                  <p className="text-gold/60 text-sm mb-4">{g.arabic}</p>
+                  <h3 className="font-serif text-xl mb-1">{lang === "ar" ? g.title.ar : g.title.en}</h3>
+                  <p className="text-gold/60 text-sm mb-4">{lang === "ar" ? g.title.en : g.title.ar}</p>
                   <ul className="space-y-2">
                     {g.members.map((m) => (
-                      <li key={m} className="flex items-center gap-3 text-sm text-zinc-300">
+                      <li key={m.en} className="flex items-center gap-3 text-sm text-zinc-300">
                         <CheckCircle className="w-4 h-4 text-gold shrink-0" />
-                        {m}
+                        {t(m)}
                       </li>
                     ))}
                   </ul>
@@ -481,7 +537,7 @@ export default function App() {
             </AutoScroller>
 
             <p className="text-center mt-10 text-sm text-zinc-500">
-              Tell us about your event in the booking form and we'll put together the right lineup.
+              {t({ en: "Tell us about your event in the booking form and we'll put together the right lineup.", ar: "أخبرنا عن مناسبتك في نموذج الحجز وسنجهّز لك التشكيلة المناسبة." })}
             </p>
           </div>
         </section>
@@ -490,8 +546,8 @@ export default function App() {
         <section id="services" className="py-28 md:py-36 bg-zinc-950 px-6 border-y border-white/5">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-20">
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">What We Offer</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">Our Services</h2>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "What We Offer", ar: "ماذا نقدّم" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Our Services", ar: "خدماتنا" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
             </div>
 
@@ -507,14 +563,14 @@ export default function App() {
                   <div className="text-gold mb-6 transition-transform duration-500 group-hover:scale-110">
                     {s.icon}
                   </div>
-                  <h3 className="font-serif text-2xl mb-1">{s.title}</h3>
-                  <p className="text-gold/60 font-arabic text-lg mb-4">{s.arabic}</p>
-                  <p className="text-zinc-500 text-sm leading-relaxed mb-6">{s.desc}</p>
+                  <h3 className="font-serif text-2xl mb-1">{lang === "ar" ? s.title.ar : s.title.en}</h3>
+                  <p className="text-gold/60 font-arabic text-lg mb-4">{lang === "ar" ? s.title.en : s.title.ar}</p>
+                  <p className="text-zinc-500 text-sm leading-relaxed mb-6">{t(s.desc)}</p>
                   <ul className="space-y-2">
                     {s.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-xs text-zinc-400 tracking-wide">
+                      <li key={f.en} className="flex items-center gap-2 text-xs text-zinc-400 tracking-wide">
                         <CheckCircle className="w-3.5 h-3.5 text-gold/60 shrink-0" />
-                        {f}
+                        {t(f)}
                       </li>
                     ))}
                   </ul>
@@ -533,8 +589,8 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-20"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">In the Spotlight</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">Gallery</h2>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "In the Spotlight", ar: "تحت الأضواء" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "Gallery", ar: "المعرض" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
             </motion.div>
 
@@ -553,7 +609,7 @@ export default function App() {
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
               >
                 <Instagram className="w-4 h-4" />
-                FOLLOW FOR MORE ON INSTAGRAM
+                {t({ en: "FOLLOW FOR MORE ON INSTAGRAM", ar: "تابعنا على إنستغرام للمزيد" })}
               </a>
             </motion.div>
           </div>
@@ -567,12 +623,19 @@ export default function App() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">The Difference</span>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "The Difference", ar: "ما يميزنا" })}</span>
               <h2 className="font-serif text-4xl md:text-5xl mb-6 leading-tight">
-                Why Choose <span className="italic gold-text">Nahawand</span>
+                {lang === "ar" ? (
+                  <>لماذا تختار <span className="gold-text">نهاوند</span></>
+                ) : (
+                  <>Why Choose <span className="italic gold-text">Nahawand</span></>
+                )}
               </h2>
               <p className="text-zinc-400 leading-relaxed text-base">
-                Every event is unique, and Nahawand treats it that way. No pre-recorded backing tracks, no generic playlists — only live, soulful performance crafted around your celebration.
+                {t({
+                  en: "Every event is unique, and Nahawand treats it that way. No pre-recorded backing tracks, no generic playlists — only live, soulful performance crafted around your celebration.",
+                  ar: "كل مناسبة فريدة، ونهاوند تتعامل معها على هذا الأساس. لا مقاطع مسجلة ولا قوائم تشغيل جاهزة — أداء حي نابض بالروح، مصمم حول احتفالك.",
+                })}
               </p>
             </motion.div>
 
@@ -593,8 +656,8 @@ export default function App() {
                 >
                   <Star className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold mb-1 tracking-wide">{item.label}</p>
-                    <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+                    <p className="text-sm font-semibold mb-1 tracking-wide">{t(item.label)}</p>
+                    <p className="text-xs text-zinc-500 leading-relaxed">{t(item.desc)}</p>
                   </div>
                 </motion.div>
               ))}
@@ -611,8 +674,8 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-20"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Happy Clients</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">What They Say</h2>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Happy Clients", ar: "عملاء سعداء" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">{t({ en: "What They Say", ar: "ماذا يقولون" })}</h2>
               <div className="h-px w-24 gold-gradient mx-auto" />
             </motion.div>
 
@@ -624,7 +687,7 @@ export default function App() {
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
               >
                 <Star className="w-4 h-4" />
-                LEAVE A REVIEW
+                {t({ en: "LEAVE A REVIEW", ar: "اترك تقييماً" })}
               </a>
             </div>
           </div>
@@ -639,9 +702,9 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               className="text-center mb-16"
             >
-              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">Reserve Your Date</span>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4 italic">Request a Booking</h2>
-              <p className="text-zinc-500 text-sm tracking-widest uppercase">Dates fill up fast — reach out early</p>
+              <span className="text-gold text-xs tracking-[0.4em] uppercase mb-4 block">{t({ en: "Reserve Your Date", ar: "احجز موعدك" })}</span>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4 italic">{t({ en: "Request a Booking", ar: "اطلب حجزاً" })}</h2>
+              <p className="text-zinc-500 text-sm tracking-widest uppercase">{t({ en: "Dates fill up fast — reach out early", ar: "المواعيد تُحجز بسرعة — تواصل معنا مبكراً" })}</p>
             </motion.div>
 
             <div className="grid md:grid-cols-5 gap-12">
@@ -650,26 +713,26 @@ export default function App() {
                 {[
                   {
                     icon: <Phone className="text-gold w-5 h-5" />,
-                    label: "Call / WhatsApp",
+                    label: t({ en: "Call / WhatsApp", ar: "اتصال / واتساب" }),
                     value: "508 615 6986  ·  617 595 5922",
                     href: "tel:+15086156986",
                   },
                   {
                     icon: <Mail className="text-gold w-5 h-5" />,
-                    label: "Email",
+                    label: t({ en: "Email", ar: "البريد الإلكتروني" }),
                     value: "ahmadalali2007@icloud.com",
                     href: "mailto:ahmadalali2007@icloud.com",
                   },
                   {
                     icon: <Instagram className="text-gold w-5 h-5" />,
-                    label: "Instagram",
+                    label: t({ en: "Instagram", ar: "إنستغرام" }),
                     value: "@nahawand_.entertainment",
                     href: "https://www.instagram.com/nahawand_.entertainment/",
                   },
                   {
                     icon: <MapPin className="text-gold w-5 h-5" />,
-                    label: "Location",
-                    value: "New England — available for travel",
+                    label: t({ en: "Location", ar: "الموقع" }),
+                    value: t({ en: "New England — available for travel", ar: "نيو إنجلاند — متاحون للسفر" }),
                     href: null,
                   },
                 ].map((c, i) => (
@@ -688,7 +751,7 @@ export default function App() {
                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-0.5">{c.label}</p>
                       {c.href ? (
                         <a href={c.href} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-gold transition-colors">
-                          {c.value}
+                          <bdi dir="ltr">{c.value}</bdi>
                         </a>
                       ) : (
                         <p className="text-sm">{c.value}</p>
@@ -710,37 +773,37 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     type="text"
-                    placeholder="YOUR NAME"
+                    placeholder={t({ en: "YOUR NAME", ar: "الاسم" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                   <input
                     type="text"
-                    placeholder="PHONE / WHATSAPP"
+                    placeholder={t({ en: "PHONE / WHATSAPP", ar: "الهاتف / واتساب" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     type="email"
-                    placeholder="EMAIL ADDRESS"
+                    placeholder={t({ en: "EMAIL ADDRESS", ar: "البريد الإلكتروني" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                   <input
                     type="text"
-                    placeholder="EVENT DATE"
+                    placeholder={t({ en: "EVENT DATE", ar: "تاريخ المناسبة" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                 </div>
                 <select defaultValue="" className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all text-zinc-500">
-                  <option value="" disabled>EVENT TYPE</option>
-                  <option value="wedding">Wedding (عرس)</option>
-                  <option value="celebration">Celebration (فرح)</option>
-                  <option value="private">Private Event (حفلة)</option>
-                  <option value="corporate">Corporate Event</option>
-                  <option value="other">Other</option>
+                  <option value="" disabled>{t({ en: "EVENT TYPE", ar: "نوع المناسبة" })}</option>
+                  <option value="wedding">{t({ en: "Wedding (عرس)", ar: "عرس" })}</option>
+                  <option value="celebration">{t({ en: "Celebration (فرح)", ar: "فرح" })}</option>
+                  <option value="private">{t({ en: "Private Event (حفلة)", ar: "حفلة خاصة" })}</option>
+                  <option value="corporate">{t({ en: "Corporate Event", ar: "فعالية شركات" })}</option>
+                  <option value="other">{t({ en: "Other", ar: "أخرى" })}</option>
                 </select>
                 <textarea
-                  placeholder="TELL US ABOUT YOUR EVENT — VENUE, GUEST COUNT, SPECIAL REQUESTS..."
+                  placeholder={t({ en: "TELL US ABOUT YOUR EVENT — VENUE, GUEST COUNT, SPECIAL REQUESTS...", ar: "أخبرنا عن مناسبتك — المكان، عدد الضيوف، طلبات خاصة..." })}
                   rows={4}
                   className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 resize-none"
                 />
@@ -750,10 +813,10 @@ export default function App() {
                   type="submit"
                   className="w-full py-5 bg-gold text-black font-bold tracking-[0.3em] text-sm uppercase hover:bg-gold-light transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_40px_rgba(212,175,55,0.4)]"
                 >
-                  SEND INQUIRY
+                  {t({ en: "SEND INQUIRY", ar: "إرسال الطلب" })}
                 </motion.button>
                 <p className="text-[10px] text-zinc-600 text-center tracking-widest">
-                  WE TYPICALLY RESPOND WITHIN 24 HOURS
+                  {t({ en: "WE TYPICALLY RESPOND WITHIN 24 HOURS", ar: "نرد عادةً خلال 24 ساعة" })}
                 </p>
               </motion.form>
             </div>
@@ -768,8 +831,8 @@ export default function App() {
           alt="Nahawand Entertainment"
           className="w-24 mx-auto mb-6 opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition-all duration-500"
         />
-        <p className="font-serif text-xl gold-text mb-1">NAHAWAND</p>
-        <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">ENTERTAINMENT</p>
+        <p className="font-serif text-xl gold-text mb-1">{t({ en: "NAHAWAND", ar: "نهاوند" })}</p>
+        <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">{t({ en: "ENTERTAINMENT", ar: "للترفيه" })}</p>
 
         <div className="flex justify-center gap-6 mb-8">
           {[
@@ -790,7 +853,7 @@ export default function App() {
         <div className="h-px w-32 gold-gradient mx-auto mb-8 opacity-30" />
 
         <p className="text-[10px] text-zinc-700 tracking-[0.35em] uppercase">
-          © 2026 Nahawand Entertainment &nbsp;·&nbsp; Authenticity in Every Note
+          {t({ en: "© 2026 Nahawand Entertainment", ar: "© 2026 نهاوند للترفيه" })} &nbsp;·&nbsp; {t({ en: "Authenticity in Every Note", ar: "الأصالة في كل نغمة" })}
         </p>
         <p className="text-[10px] text-zinc-600 tracking-[0.2em] uppercase mt-3">
           <a
