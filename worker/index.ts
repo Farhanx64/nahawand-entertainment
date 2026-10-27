@@ -3,6 +3,11 @@ interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
   ADMIN_KEY: string;
+  // Optional email notification. Set up Email Sending, add a `send_email` binding named EMAIL and
+  // NOTIFY_TO / NOTIFY_FROM vars in wrangler.jsonc to turn it on; inquiries are always saved to D1.
+  EMAIL?: { send(message: { to: string; from: string; subject: string; text: string; replyTo?: string }): Promise<unknown> };
+  NOTIFY_TO?: string;
+  NOTIFY_FROM?: string;
 }
 
 const json = (data: unknown, status = 200) =>
@@ -20,7 +25,7 @@ const isAdmin = (req: Request, env: Env) =>
   !!env.ADMIN_KEY && req.headers.get("authorization") === `Bearer ${env.ADMIN_KEY}`;
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     const path = url.pathname;
 
@@ -59,6 +64,82 @@ export default {
         "INSERT INTO reviews (name, event_type, rating, message, ip_hash) VALUES (?, ?, ?, ?, ?)",
       ).bind(name, eventType || null, rating, message, ipHash).run();
       return json({ ok: true }, 201);
+    }
+
+    if (path === "/api/inquiries" && req.method === "POST") {
+      let body: Record<string, unknown>;
+      try {
+        body = await req.json();
+      } catch {
+        return json({ error: "Invalid request" }, 400);
+      }
+      // Honeypot: real visitors never fill this hidden field.
+      if (typeof body.website === "string" && body.website.trim()) return json({ ok: true });
+
+      const clean = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+      const name = clean(body.name, 80);
+      const phone = clean(body.phone, 40);
+      const email = clean(body.email, 120);
+      const eventType = clean(body.eventType, 40);
+      const eventDate = clean(body.eventDate, 60);
+      const message = clean(body.message, 2000);
+      const emailOk = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!name || (!phone && !email) || !emailOk) {
+        return json({ error: "Please add your name and a phone number or email." }, 400);
+      }
+
+      const ipHash = await hashIp(req.headers.get("cf-connecting-ip") ?? "unknown");
+      const recent = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM inquiries WHERE ip_hash = ? AND created_at > datetime('now', '-1 hour')",
+      ).bind(ipHash).first<{ n: number }>();
+      if ((recent?.n ?? 0) >= 5) return json({ error: "Too many submissions. Please try again later." }, 429);
+
+      await env.DB.prepare(
+        "INSERT INTO inquiries (name, phone, email, event_type, event_date, message, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      ).bind(name, phone || null, email || null, eventType || null, eventDate || null, message || null, ipHash).run();
+
+      if (env.EMAIL && env.NOTIFY_TO && env.NOTIFY_FROM) {
+        const text = [
+          `Name: ${name}`,
+          `Phone: ${phone || "-"}`,
+          `Email: ${email || "-"}`,
+          `Event type: ${eventType || "-"}`,
+          `Event date: ${eventDate || "-"}`,
+          "",
+          message || "(no message)",
+        ].join("\n");
+        ctx.waitUntil(
+          env.EMAIL.send({
+            to: env.NOTIFY_TO,
+            from: env.NOTIFY_FROM,
+            subject: `New booking inquiry from ${name}`,
+            text,
+            ...(email ? { replyTo: email } : {}),
+          }).catch(() => {}),
+        );
+      }
+      return json({ ok: true }, 201);
+    }
+
+    if (path === "/api/admin/inquiries" && req.method === "GET") {
+      if (!isAdmin(req, env)) return json({ error: "Unauthorized" }, 401);
+      const { results } = await env.DB.prepare(
+        "SELECT id, name, phone, email, event_type, event_date, message, handled, created_at FROM inquiries ORDER BY handled ASC, created_at DESC LIMIT 500",
+      ).all();
+      return json(results);
+    }
+
+    const q = path.match(/^\/api\/admin\/inquiries\/(\d+)$/);
+    if (q && (req.method === "POST" || req.method === "DELETE")) {
+      if (!isAdmin(req, env)) return json({ error: "Unauthorized" }, 401);
+      const id = Number(q[1]);
+      if (req.method === "DELETE") {
+        await env.DB.prepare("DELETE FROM inquiries WHERE id = ?").bind(id).run();
+      } else {
+        const { handled } = (await req.json()) as { handled: boolean };
+        await env.DB.prepare("UPDATE inquiries SET handled = ? WHERE id = ?").bind(handled ? 1 : 0, id).run();
+      }
+      return json({ ok: true });
     }
 
     if (path === "/api/admin/reviews" && req.method === "GET") {

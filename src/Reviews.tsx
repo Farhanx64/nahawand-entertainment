@@ -206,12 +206,26 @@ function PublicReviews() {
   );
 }
 
+type Inquiry = {
+  id: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  event_type: string | null;
+  event_date: string | null;
+  message: string | null;
+  handled: number;
+  created_at: string;
+};
+
 function Admin() {
   const [key, setKey] = useState(() => {
     try { return sessionStorage.getItem("adminKey") || ""; } catch { return ""; }
   });
   const [input, setInput] = useState("");
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [tab, setTab] = useState<"inquiries" | "reviews">("inquiries");
   const [error, setError] = useState("");
 
   const headers = { authorization: `Bearer ${key}` };
@@ -226,6 +240,8 @@ function Admin() {
     }
     setError("");
     setReviews(await res.json());
+    const inq = await fetch("/api/admin/inquiries", { headers });
+    if (inq.ok) setInquiries(await inq.json());
   };
 
   useEffect(() => {
@@ -241,6 +257,15 @@ function Admin() {
     load();
   };
 
+  const actInquiry = async (id: number, handled?: boolean) => {
+    await fetch(`/api/admin/inquiries/${id}`, {
+      method: handled === undefined ? "DELETE" : "POST",
+      headers: { ...headers, "content-type": "application/json" },
+      body: handled === undefined ? undefined : JSON.stringify({ handled }),
+    });
+    load();
+  };
+
   if (!key) {
     return (
       <Shell>
@@ -252,7 +277,7 @@ function Admin() {
             setKey(input);
           }}
         >
-          <h1 className="font-serif text-3xl text-center mb-6">Review admin</h1>
+          <h1 className="font-serif text-3xl text-center mb-6">Admin</h1>
           <input type="password" className={inputCls} placeholder="Admin key" value={input} onChange={(e) => setInput(e.target.value)} />
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button className="w-full py-3 bg-gold text-black font-semibold tracking-[0.2em] text-sm">SIGN IN</button>
@@ -261,32 +286,77 @@ function Admin() {
     );
   }
 
+  const newInquiries = inquiries.filter((q) => !q.handled).length;
+  const pendingReviews = reviews.filter((r) => !r.approved).length;
+  const tabCls = (active: boolean) =>
+    `px-4 py-2 text-xs tracking-[0.2em] border transition-colors ${active ? "border-gold bg-gold text-black" : "border-white/10 text-zinc-400 hover:text-gold"}`;
+
   return (
     <Shell>
-      <h1 className="font-serif text-3xl mb-8">Review admin</h1>
-      <div className="space-y-4">
-        {reviews.length === 0 && <p className="text-zinc-500 text-sm">No reviews submitted yet.</p>}
-        {reviews.map((r) => (
-          <article key={r.id} className={`border p-5 ${r.approved ? "border-gold/30" : "border-white/10"} bg-zinc-950`}>
-            <div className="flex items-center justify-between mb-2">
-              <Stars value={r.rating} />
-              <span className={`text-[10px] tracking-[0.2em] ${r.approved ? "text-gold" : "text-zinc-500"}`}>
-                {r.approved ? "PUBLISHED" : "PENDING"} · {r.created_at.slice(0, 10)}
-              </span>
-            </div>
-            <p className="text-zinc-300 text-sm whitespace-pre-line">{r.message}</p>
-            <p className="mt-3 text-sm text-gold">{r.name}{r.event_type && <span className="text-zinc-500"> · {r.event_type}</span>}</p>
-            <div className="flex gap-3 mt-4">
-              <button onClick={() => act(r.id, !r.approved)} className="px-4 py-2 text-xs tracking-[0.2em] border border-gold text-gold hover:bg-gold hover:text-black transition-colors">
-                {r.approved ? "UNPUBLISH" : "APPROVE"}
-              </button>
-              <button onClick={() => confirm("Delete this review?") && act(r.id)} className="px-3 py-2 text-zinc-500 hover:text-red-400" aria-label="Delete">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </article>
-        ))}
+      <h1 className="font-serif text-3xl mb-6">Admin</h1>
+      <div className="flex gap-3 mb-8">
+        <button onClick={() => setTab("inquiries")} className={tabCls(tab === "inquiries")}>
+          INQUIRIES{newInquiries > 0 && ` (${newInquiries} NEW)`}
+        </button>
+        <button onClick={() => setTab("reviews")} className={tabCls(tab === "reviews")}>
+          REVIEWS{pendingReviews > 0 && ` (${pendingReviews} PENDING)`}
+        </button>
       </div>
+
+      {tab === "inquiries" ? (
+        <div className="space-y-4">
+          {inquiries.length === 0 && <p className="text-zinc-500 text-sm">No inquiries yet.</p>}
+          {inquiries.map((q) => (
+            <article key={q.id} className={`border p-5 ${q.handled ? "border-white/10" : "border-gold/30"} bg-zinc-950`}>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-serif text-xl text-gold">{q.name}</h2>
+                <span className={`text-[10px] tracking-[0.2em] ${q.handled ? "text-zinc-500" : "text-gold"}`}>
+                  {q.handled ? "HANDLED" : "NEW"} · {q.created_at.slice(0, 16).replace("T", " ")}
+                </span>
+              </div>
+              <div className="text-sm text-zinc-300 space-y-1 mb-3">
+                {q.phone && <p>Phone: <a href={`tel:${q.phone}`} className="text-gold hover:underline">{q.phone}</a></p>}
+                {q.email && <p>Email: <a href={`mailto:${q.email}`} className="text-gold hover:underline">{q.email}</a></p>}
+                {q.event_type && <p>Event: {q.event_type}</p>}
+                {q.event_date && <p>Date: {q.event_date}</p>}
+              </div>
+              {q.message && <p className="text-zinc-400 text-sm whitespace-pre-line">{q.message}</p>}
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => actInquiry(q.id, !q.handled)} className="px-4 py-2 text-xs tracking-[0.2em] border border-gold text-gold hover:bg-gold hover:text-black transition-colors">
+                  {q.handled ? "MARK AS NEW" : "MARK AS HANDLED"}
+                </button>
+                <button onClick={() => confirm("Delete this inquiry?") && actInquiry(q.id)} className="px-3 py-2 text-zinc-500 hover:text-red-400" aria-label="Delete">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reviews.length === 0 && <p className="text-zinc-500 text-sm">No reviews submitted yet.</p>}
+          {reviews.map((r) => (
+            <article key={r.id} className={`border p-5 ${r.approved ? "border-gold/30" : "border-white/10"} bg-zinc-950`}>
+              <div className="flex items-center justify-between mb-2">
+                <Stars value={r.rating} />
+                <span className={`text-[10px] tracking-[0.2em] ${r.approved ? "text-gold" : "text-zinc-500"}`}>
+                  {r.approved ? "PUBLISHED" : "PENDING"} · {r.created_at.slice(0, 10)}
+                </span>
+              </div>
+              <p className="text-zinc-300 text-sm whitespace-pre-line">{r.message}</p>
+              <p className="mt-3 text-sm text-gold">{r.name}{r.event_type && <span className="text-zinc-500"> · {r.event_type}</span>}</p>
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => act(r.id, !r.approved)} className="px-4 py-2 text-xs tracking-[0.2em] border border-gold text-gold hover:bg-gold hover:text-black transition-colors">
+                  {r.approved ? "UNPUBLISH" : "APPROVE"}
+                </button>
+                <button onClick={() => confirm("Delete this review?") && act(r.id)} className="px-3 py-2 text-zinc-500 hover:text-red-400" aria-label="Delete">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </Shell>
   );
 }

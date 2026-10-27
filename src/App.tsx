@@ -415,8 +415,42 @@ export function Footer() {
   );
 }
 
+type InquiryForm = { name: string; phone: string; email: string; eventDate: string; eventType: string; message: string; website: string };
+const EMPTY_FORM: InquiryForm = { name: "", phone: "", email: "", eventDate: "", eventType: "", message: "", website: "" };
+
 export default function App() {
   const { t, lang, dir, localizePath } = useLang();
+  const [form, setForm] = useState<InquiryForm>(EMPTY_FORM);
+  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "done">("idle");
+  const [formError, setFormError] = useState("");
+  const setField = (k: keyof InquiryForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const submitInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    if (!form.name.trim() || (!form.phone.trim() && !form.email.trim())) {
+      setFormError(t({ en: "Please add your name and a phone number or email.", ar: "الرجاء إدخال الاسم ورقم الهاتف أو البريد الإلكتروني." }));
+      return;
+    }
+    setFormStatus("sending");
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(res.status === 429 ? "rate" : "fail");
+      setForm(EMPTY_FORM);
+      setFormStatus("done");
+    } catch (err) {
+      setFormStatus("idle");
+      setFormError(
+        err instanceof Error && err.message === "rate"
+          ? t({ en: "Too many requests. Please try again later or call us.", ar: "عدد الطلبات كبير. حاولوا لاحقاً أو اتصلوا بنا." })
+          : t({ en: "Something went wrong. Please try again or call us.", ar: "حدث خطأ. حاولوا مرة أخرى أو اتصلوا بنا." }),
+      );
+    }
+  };
   const [ratings, setRatings] = useState<number[]>([]);
   useEffect(() => {
     fetch("/api/reviews")
@@ -864,20 +898,40 @@ export default function App() {
 
               {/* Form */}
               <motion.form
-                onSubmit={(e) => e.preventDefault()}
+                onSubmit={submitInquiry}
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "0px 0px 250px 0px" }}
                 className="md:col-span-3 space-y-4"
               >
+                {formStatus === "done" ? (
+                  <div role="status" className="text-center py-16 border border-gold/20 bg-black">
+                    <CheckCircle className="w-12 h-12 text-gold mx-auto mb-4" />
+                    <h3 className="font-serif text-2xl mb-2">{t({ en: "Thank you!", ar: "شكراً لكم!" })}</h3>
+                    <p className="text-zinc-400 text-sm px-6">
+                      {t({ en: "We received your inquiry and will get back to you soon.", ar: "وصلنا طلبكم وسنتواصل معكم قريباً." })}
+                    </p>
+                  </div>
+                ) : (
+                  <>
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     type="text"
+                    name="name"
+                    autoComplete="name"
+                    maxLength={80}
+                    value={form.name}
+                    onChange={setField("name")}
                     placeholder={t({ en: "YOUR NAME", ar: "الاسم" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                   <input
-                    type="text"
+                    type="tel"
+                    name="phone"
+                    autoComplete="tel"
+                    maxLength={40}
+                    value={form.phone}
+                    onChange={setField("phone")}
                     placeholder={t({ en: "PHONE / WHATSAPP", ar: "الهاتف / واتساب" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
@@ -885,16 +939,25 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="email"
+                    maxLength={120}
+                    value={form.email}
+                    onChange={setField("email")}
                     placeholder={t({ en: "EMAIL ADDRESS", ar: "البريد الإلكتروني" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                   <input
                     type="text"
+                    name="eventDate"
+                    maxLength={60}
+                    value={form.eventDate}
+                    onChange={setField("eventDate")}
                     placeholder={t({ en: "EVENT DATE", ar: "تاريخ المناسبة" })}
                     className="bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 w-full"
                   />
                 </div>
-                <select defaultValue="" className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all text-zinc-500">
+                <select name="eventType" value={form.eventType} onChange={setField("eventType")} className={`w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all ${form.eventType ? "text-white" : "text-zinc-500"}`}>
                   <option value="" disabled>{t({ en: "EVENT TYPE", ar: "نوع المناسبة" })}</option>
                   <option value="wedding">{t({ en: "Wedding (عرس)", ar: "عرس" })}</option>
                   <option value="celebration">{t({ en: "Celebration (فرح)", ar: "احتفال" })}</option>
@@ -903,21 +966,39 @@ export default function App() {
                   <option value="other">{t({ en: "Other", ar: "أخرى" })}</option>
                 </select>
                 <textarea
+                  name="message"
+                  maxLength={2000}
+                  value={form.message}
+                  onChange={setField("message")}
                   placeholder={t({ en: "TELL US ABOUT YOUR EVENT — VENUE, GUEST COUNT, SPECIAL REQUESTS...", ar: "شاركونا تفاصيل المناسبة: المكان، عدد الضيوف، وأي طلبات خاصة…" })}
                   rows={4}
                   className="w-full bg-black border border-white/8 p-4 text-xs tracking-widest focus:border-gold outline-none transition-all placeholder:text-zinc-700 resize-none"
                 />
+                {/* Honeypot: hidden from people, filled by bots */}
+                <input
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="hidden"
+                  name="website"
+                  value={form.website}
+                  onChange={setField("website")}
+                />
+                {formError && <p role="alert" className="text-red-400 text-xs tracking-wide">{formError}</p>}
                 <motion.button
+                  disabled={formStatus === "sending"}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   className="w-full py-5 bg-gold text-black font-bold tracking-[0.3em] text-sm uppercase hover:bg-gold-light transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_40px_rgba(212,175,55,0.4)]"
                 >
-                  {t({ en: "SEND INQUIRY", ar: "إرسال الاستفسار" })}
+                  {formStatus === "sending" ? t({ en: "SENDING…", ar: "جارٍ الإرسال…" }) : t({ en: "SEND INQUIRY", ar: "إرسال الاستفسار" })}
                 </motion.button>
                 <p className="text-[10px] text-zinc-600 text-center tracking-widest">
                   {t({ en: "WE TYPICALLY RESPOND WITHIN 24 HOURS", ar: "نردّ عادةً خلال 24 ساعة" })}
                 </p>
+                  </>
+                )}
               </motion.form>
             </div>
           </div>
