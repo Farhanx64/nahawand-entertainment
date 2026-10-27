@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Star, ArrowLeft, CheckCircle, Trash2 } from "lucide-react";
+import { englishPath } from "./language.ts";
 import { useLang, LangToggle } from "./i18n.tsx";
 
 type Review = {
@@ -45,11 +46,11 @@ const inputCls =
   "w-full bg-zinc-950 border border-white/10 focus:border-gold outline-none px-4 py-3 text-sm text-white placeholder:text-zinc-500 transition-colors";
 
 function Shell({ children }: { children: ReactNode }) {
-  const { t } = useLang();
+  const { t, localizePath } = useLang();
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-        <a href="/" className="flex items-center gap-3 text-xs tracking-[0.2em] text-gold/80 hover:text-gold">
+        <a href={localizePath("/")} className="flex items-center gap-3 text-xs tracking-[0.2em] text-gold/80 hover:text-gold">
           <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {t({ en: "BACK TO SITE", ar: "العودة إلى الموقع" })}
         </a>
         <div className="flex items-center gap-4">
@@ -291,5 +292,5 @@ function Admin() {
 }
 
 export default function Reviews() {
-  return window.location.pathname.startsWith("/reviews/admin") ? <Admin /> : <PublicReviews />;
+  return englishPath(window.location.pathname).startsWith("/reviews/admin") ? <Admin /> : <PublicReviews />;
 }

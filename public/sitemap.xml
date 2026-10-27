@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://nahawand.org/</loc></url>
+  <url><loc>https://nahawand.org/weddings/</loc></url>
+  <url><loc>https://nahawand.org/areas/worcester/</loc></url>
+  <url><loc>https://nahawand.org/areas/boston/</loc></url>
   <url><loc>https://nahawand.org/reviews/</loc></url>
+  <url><loc>https://nahawand.org/ar/</loc></url>
+  <url><loc>https://nahawand.org/ar/weddings/</loc></url>
+  <url><loc>https://nahawand.org/ar/areas/worcester/</loc></url>
+  <url><loc>https://nahawand.org/ar/areas/boston/</loc></url>
 </urlset>

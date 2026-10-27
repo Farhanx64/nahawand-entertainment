@@ -192,7 +192,7 @@ const BAND: { title: L; icon: React.ReactNode; members: L[] }[] = [
   },
 ];
 
-const SERVICES: { title: L; icon: React.ReactNode; desc: L; features: L[] }[] = [
+const SERVICES: { title: L; icon: React.ReactNode; desc: L; features: L[]; href?: string }[] = [
   {
     title: { en: "Weddings", ar: "أعراس" },
     icon: <Crown className="w-10 h-10" />,
@@ -205,6 +205,7 @@ const SERVICES: { title: L; icon: React.ReactNode; desc: L; features: L[] }[] = 
       { en: "Customised song list", ar: "أغانٍ من اختياركم" },
       { en: "Full-night sets", ar: "موسيقى طوال السهرة" },
     ],
+    href: "/weddings/",
   },
   {
     title: { en: "Celebrations", ar: "احتفالات" },
@@ -255,8 +256,8 @@ const WHY_ITEMS: { label: L; desc: L }[] = [
   },
 ];
 
-function NavBar() {
-  const { t } = useLang();
+export function NavBar() {
+  const { t, localizePath } = useLang();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -269,7 +270,11 @@ function NavBar() {
   const scrollTo = (id: string) => {
     setOpen(false);
     if (id.startsWith("/")) {
-      window.location.href = id;
+      window.location.href = localizePath(id);
+      return;
+    }
+    if (window.location.pathname !== localizePath("/")) {
+      window.location.href = localizePath(`/${id}`);
       return;
     }
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
@@ -356,8 +361,62 @@ function NavBar() {
   );
 }
 
+export function Footer() {
+  const { t, localizePath } = useLang();
+  return (
+      <footer className="relative py-16 px-6 border-t border-white/5 text-center bg-black">
+        <img
+          src="/logo.png"
+          alt="Nahawand Entertainment"
+          className="w-24 mx-auto mb-6 opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition-all duration-500"
+        />
+        <p className="font-serif text-xl gold-text mb-1">{t({ en: "NAHAWAND", ar: "نهاوند" })}</p>
+        <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">{t({ en: "ENTERTAINMENT", ar: "للموسيقى والحفلات" })}</p>
+
+        <div className="flex justify-center gap-6 mb-8">
+          {[
+            { icon: <Instagram className="w-4 h-4" />, href: "https://www.instagram.com/nahawand_.entertainment/" },
+          ].map((s, i) => (
+            <a
+              key={i}
+              href={localizePath(s.href)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-9 h-9 border border-white/10 hover:border-gold hover:text-gold flex items-center justify-center text-zinc-500 transition-all rounded-sm"
+            >
+              {s.icon}
+            </a>
+          ))}
+        </div>
+
+        <nav aria-label="Footer" className="flex justify-center gap-6 mb-8 text-[10px] tracking-[0.25em] uppercase text-zinc-500">
+          <a href={localizePath("/weddings/")} className="hover:text-gold transition-colors">{t({ en: "Weddings", ar: "الأعراس" })}</a>
+          <a href={localizePath("/areas/worcester/")} className="hover:text-gold transition-colors">{t({ en: "Worcester", ar: "وستر" })}</a>
+          <a href={localizePath("/areas/boston/")} className="hover:text-gold transition-colors">{t({ en: "Boston", ar: "بوسطن" })}</a>
+          <a href={localizePath("/reviews/")} className="hover:text-gold transition-colors">{t({ en: "Reviews", ar: "التقييمات" })}</a>
+        </nav>
+
+        <div className="h-px w-32 gold-gradient mx-auto mb-8 opacity-30" />
+
+        <p className="text-[10px] text-zinc-700 tracking-[0.35em] uppercase">
+          {t({ en: "© 2026 Nahawand Entertainment", ar: "© 2026 نهاوند للموسيقى والحفلات" })} &nbsp;·&nbsp; {t({ en: "Authenticity in Every Note", ar: "أصالة في كل نغمة" })}
+        </p>
+        <p className="text-[10px] text-zinc-600 tracking-[0.2em] uppercase mt-3">
+          <a
+            href="https://www.instagram.com/jbpasto/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gold transition-colors"
+          >
+            Made w Joy by Farhan Ü
+          </a>
+        </p>
+      </footer>
+  );
+}
+
 export default function App() {
-  const { t, lang, dir } = useLang();
+  const { t, lang, dir, localizePath } = useLang();
   const [ratings, setRatings] = useState<number[]>([]);
   useEffect(() => {
     fetch("/api/reviews")
@@ -413,7 +472,7 @@ export default function App() {
           />
 
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl mb-5 tracking-tight leading-tight text-center">
-            <span className="sr-only">{t({ en: "Nahawand Entertainment — Live Arabic music for weddings in New England. ", ar: "نهاوند للموسيقى والحفلات — موسيقى عربية حيّة للأعراس في نيو إنجلاند. " })}</span>
+            <span className="sr-only">{t({ en: "Nahawand Entertainment — Live Arabic music for weddings in New England. ", ar: "فرقة موسيقية عربية للأعراس والحفلات في نيو إنجلاند. " })}</span>
             {lang === "ar" ? (
               <>ألحان <span className="gold-text">شرقية</span></>
             ) : (
@@ -476,6 +535,11 @@ export default function App() {
               viewport={{ once: true, margin: "0px 0px 250px 0px" }}
               transition={{ duration: 0.9, ease: "easeOut" }}
             >
+              <p className="text-zinc-400 text-base leading-relaxed text-center max-w-2xl mx-auto mb-10">
+                {t({
+                  en: "Nahawand Entertainment is a live Arabic and oriental music band for weddings, engagement parties and private celebrations. We bring zaffa entrances, dinner music and full dance-floor sets to Worcester, Boston and across New England. Contact us with your location and date.", ar: "نهاوند فرقة موسيقية عربية للأعراس والخطوبة والحفلات الخاصة. من زفّة العروسين إلى موسيقى العشاء وأجواء الرقص، نختار معكم برنامجًا يناسب فرحتكم. لمناسباتكم في وستر وبوسطن ونيو إنجلاند، تواصلوا معنا مع ذكر المكان والتاريخ.",
+                })}
+              </p>
               <div className="grid grid-cols-3 gap-6 mb-4 py-8 border-y border-white/5 text-center">
                 {[
                   { val: "5+", label: t({ en: "Years Experience", ar: "سنوات من الخبرة" }) },
@@ -574,6 +638,14 @@ export default function App() {
                       </li>
                     ))}
                   </ul>
+                  {s.href && (
+                    <a
+                      href={localizePath(s.href)}
+                      className="mt-6 inline-block text-[11px] tracking-[0.25em] uppercase text-gold/70 hover:text-gold border-b border-gold/20 hover:border-gold pb-0.5 transition-colors"
+                    >
+                      {t({ en: "Learn more", ar: "المزيد عن موسيقى الأعراس" })}
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -683,7 +755,7 @@ export default function App() {
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
               <a
-                href="/reviews"
+                href={localizePath("/reviews")}
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
               >
                 <Star className="w-4 h-4" />
@@ -852,48 +924,7 @@ export default function App() {
         </section>
       </main>
 
-      {/* ── FOOTER ────────────────────────────────────────────────── */}
-      <footer className="relative py-16 px-6 border-t border-white/5 text-center bg-black">
-        <img
-          src="/logo.png"
-          alt="Nahawand Entertainment"
-          className="w-24 mx-auto mb-6 opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition-all duration-500"
-        />
-        <p className="font-serif text-xl gold-text mb-1">{t({ en: "NAHAWAND", ar: "نهاوند" })}</p>
-        <p className="text-[9px] text-zinc-600 tracking-[0.4em] uppercase mb-8">{t({ en: "ENTERTAINMENT", ar: "للموسيقى والحفلات" })}</p>
-
-        <div className="flex justify-center gap-6 mb-8">
-          {[
-            { icon: <Instagram className="w-4 h-4" />, href: "https://www.instagram.com/nahawand_.entertainment/" },
-          ].map((s, i) => (
-            <a
-              key={i}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-9 h-9 border border-white/10 hover:border-gold hover:text-gold flex items-center justify-center text-zinc-500 transition-all rounded-sm"
-            >
-              {s.icon}
-            </a>
-          ))}
-        </div>
-
-        <div className="h-px w-32 gold-gradient mx-auto mb-8 opacity-30" />
-
-        <p className="text-[10px] text-zinc-700 tracking-[0.35em] uppercase">
-          {t({ en: "© 2026 Nahawand Entertainment", ar: "© 2026 نهاوند للموسيقى والحفلات" })} &nbsp;·&nbsp; {t({ en: "Authenticity in Every Note", ar: "أصالة في كل نغمة" })}
-        </p>
-        <p className="text-[10px] text-zinc-600 tracking-[0.2em] uppercase mt-3">
-          <a
-            href="https://www.instagram.com/jbpasto/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-gold transition-colors"
-          >
-            Made w Joy by Farhan Ü
-          </a>
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }
