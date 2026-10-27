@@ -168,6 +168,18 @@ function PublicReviews() {
         )}
       </section>
 
+      <p className="text-center text-sm text-zinc-400 -mt-8 mb-12">
+        {t({ en: "Prefer Google?", ar: "تفضّل Google؟" })}{" "}
+        <a
+          href="https://g.page/r/CeOGM30lYYpuECE/review"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gold hover:text-gold-light underline underline-offset-4"
+        >
+          {t({ en: "Leave a review on Google", ar: "قيّمنا على Google" })}
+        </a>
+      </p>
+
       <section className="space-y-5">
         {reviews === null ? (
           <p className="text-center text-zinc-500 text-sm">{t({ en: "Loading…", ar: "جارٍ التحميل…" })}</p>

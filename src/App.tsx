@@ -681,13 +681,22 @@ export default function App() {
 
             <ReviewCarousel />
 
-            <div className="text-center mt-10">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
               <a
                 href="/reviews"
                 className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
               >
                 <Star className="w-4 h-4" />
                 {t({ en: "LEAVE A REVIEW", ar: "شاركنا رأيك" })}
+              </a>
+              <a
+                href="https://g.page/r/CeOGM30lYYpuECE/review"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 text-sm tracking-[0.2em] text-gold/70 hover:text-gold transition-colors border-b border-gold/20 hover:border-gold pb-1"
+              >
+                <Star className="w-4 h-4" />
+                {t({ en: "REVIEW US ON GOOGLE", ar: "قيّمونا على Google" })}
               </a>
             </div>
           </div>
@@ -714,8 +723,12 @@ export default function App() {
                   {
                     icon: <Phone className="text-gold w-5 h-5" />,
                     label: t({ en: "Call / WhatsApp", ar: "اتصال / واتساب" }),
-                    value: "508 615 6986  ·  617 595 5922",
-                    href: "tel:+15086156986",
+                    value: "",
+                    href: null,
+                    phones: [
+                      { text: "508 615 6986", href: "tel:+15086156986" },
+                      { text: "617 595 5922", href: "tel:+16175955922" },
+                    ],
                   },
                   {
                     icon: <Mail className="text-gold w-5 h-5" />,
@@ -749,8 +762,23 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-0.5">{c.label}</p>
-                      {c.href ? (
-                        <a href={c.href} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-gold transition-colors">
+                      {"phones" in c && c.phones ? (
+                        <p className="text-sm flex flex-wrap gap-x-3">
+                          {c.phones.map((ph, k) => (
+                            <React.Fragment key={ph.href}>
+                              {k > 0 && <span className="text-zinc-600">·</span>}
+                              <a href={ph.href} className="hover:text-gold transition-colors">
+                                <bdi dir="ltr">{ph.text}</bdi>
+                              </a>
+                            </React.Fragment>
+                          ))}
+                        </p>
+                      ) : c.href ? (
+                        <a
+                          href={c.href}
+                          {...(c.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                          className="text-sm hover:text-gold transition-colors"
+                        >
                           <bdi dir="ltr">{c.value}</bdi>
                         </a>
                       ) : (
